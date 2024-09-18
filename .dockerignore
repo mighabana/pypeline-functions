@@ -1,0 +1,12 @@
+# Docker
+Dockerfile
+
+# Git
+.gitignore
+
+# Python virtual environment
+**/venv
+**/.ruff_cache
+
+# Config folder
+**/config

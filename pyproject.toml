@@ -1,0 +1,98 @@
+[build-system]
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[project]
+
+name = "pypeline-functions"
+dynamic = ["version"]
+description = "A compiliation of data pipeline scripts in Python"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">= 3.8"
+keywords = [
+    "data pipelines",
+    ""
+]
+authors = [{name = "Miguel Habana", email = "mighabana@gmail.com"}]
+dependencies = [
+    "pyodbc",
+    "sshtunnel",
+    "pandas",
+    "google-auth",
+    "google-cloud-bigquery",
+    "google-cloud-storage",
+    "fastparquet",
+]
+
+# list of possible classifiers: https://pypi.org/classifiers/
+classifiers = [ 
+    "Development Status :: 2 - Pre-Alpha",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Libraries",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+
+[project.optional-dependencies]
+
+dev = [
+    "ruff"
+]
+
+[tool.hatch]
+# using hatch-vcs (https://github.com/ofek/hatch-vcs/tree/master) for single-source package versioning
+version.source = "vcs"
+build.hooks.vcs.version-file = "_version.py"
+
+[tool.ruff]
+line-length = 120
+lint.extend-select = [
+    "F",
+    "E",
+    "W",
+    "I",
+    "N",
+    "D",
+    "UP",
+    "ANN",
+    "ASYNC",
+    "S",
+    # Remove BLE for now until I learn better exception handling
+    # "BLE",
+    "B",
+    "A",
+    "C4",
+    "DTZ",
+    "EXE",
+    "ISC",
+    "ICN",
+    "Q",
+    "ARG",
+    # Review TODO and FIXME tag usage
+    # "TD", "FIX",
+    "PD",
+    "PL",
+    "NPY",
+    "RUF"
+]
+lint.ignore = [
+    # Ignore `self` and `cls` type annotations
+    "ANN101", "ANN102",
+    # Ignore checks for the `assert` keyword
+    "S101", 
+    # Ignore checks for possible passwords
+    "S105", "S106", "S107",
+    # Ignore argument clount limit
+    "PLR0913",
+    # Ignore generic `df` variable name for DataFrames
+    "PD901",
+]
+lint.pydocstyle.convention = "numpy"
+
+# Additional configurations should include unit testing and test coverage (see pytest and pytest-cov respectively)

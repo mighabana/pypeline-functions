@@ -1,0 +1,19 @@
+# Python
+**/venv
+**/__pycache__/
+
+*.ipynb
+
+### Hatch
+_version.py
+
+### Ruff
+**/.ruff_cache
+
+# Data Files
+*.csv
+*.parquet
+*.xlsx
+
+# Environment Variables
+.envrc
