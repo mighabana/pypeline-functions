@@ -4,15 +4,16 @@ This module provides:
 - TargetGoogleCloudStorage: class containing helper functions for authenticating, uploading and managing files in GCS.
 """
 
-import logging
-import re
 import io
 import json
+import logging
+import re
 from zipfile import ZipFile, is_zipfile
 
 from google.cloud.storage import Client, transfer_manager
 
 
+# TODO: add logging to all functions
 class GoogleCloudStorage:
     """A data target helper class for authenticating, uploading and managing files in Google Cloud Storage.
 
@@ -43,7 +44,12 @@ class GoogleCloudStorage:
 # ----------------------------------- Upload -----------------------------------
 # inspiration: https://cloud.google.com/storage/docs/uploading-objects
 
-    def upload(self, source_file:str, bucket_name:str, file_path:str) -> bool:
+    def upload(
+        self,
+        source_file:str,
+        bucket_name:str,
+        file_path:str
+    ) -> bool:
         """Upload a single file to Google Cloud Storage at the specified destination.
 
         Parameters
@@ -59,27 +65,36 @@ class GoogleCloudStorage:
         blob = bucket.blob(file_path)
         blob.upload_from_filename(source_file)
 
-    def upload_many_blobs_with_transfer_manager(self, bucket_name:str, filenames:list[str], source_directory:str="", workers=8) -> None:
+    def upload_many_blobs_with_transfer_manager(
+        self,
+        bucket_name:str,
+        filenames:list[str],
+        source_directory:str="",
+        workers:int=8
+    ) -> None:
         """Upload every file in a list to a bucket, concurrently in a process pool."""
-        
         bucket = self.client.bucket(bucket_name)
 
         results = transfer_manager.upload_many_from_filenames(
             bucket, filenames, source_directory=source_directory, max_workers=workers
         )
 
-        for name, result in zip(filenames, results):
+        for name, result in zip(filenames, results, strict=False):
             # The results list is either `None` or an exception for each filename in
             # the input list, in order.
 
             if isinstance(result, Exception):
-                print("Failed to upload {} due to exception: {}".format(name, result))
+                print(f"Failed to upload {name} due to exception: {result}")
             else:
-                print("Uploaded {} to {}.".format(name, bucket.name))
+                print(f"Uploaded {name} to {bucket.name}.")
 
-    def upload_directory_with_transfer_manager(self, bucket_name, source_directory, workers=8) -> None:
+    def upload_directory_with_transfer_manager(
+        self,
+        bucket_name:str,
+        source_directory:str,
+        workers:int=8
+    ) -> None:
         """Upload every file in a directory, including all files in subdirectories."""
-
         from pathlib import Path
 
         bucket = self.client.bucket(bucket_name)
@@ -105,20 +120,20 @@ class GoogleCloudStorage:
             bucket, string_paths, source_directory=source_directory, max_workers=workers
         )
 
-        for name, result in zip(string_paths, results):
+        for name, result in zip(string_paths, results, strict=False):
             # The results list is either `None` or an exception for each filename in the input list, in order.
 
             if isinstance(result, Exception):
-                logging.error("Failed to upload {} due to exception: {}".format(name, result))
+                logging.error(f"Failed to upload {name} due to exception: {result}")
                 raise ExceptionGroup("File upload failed", result)
             else:
-                logging.info("Uploaded {} to {}.".format(name, bucket.name))
+                logging.info(f"Uploaded {name} to {bucket.name}.")
 
 # ----------------------------------- Delete -----------------------------------
 
     def detele_file(self, bucket_name:str, blob_name:str) -> None:
-        """Deletes a blob from the bucket.
-        
+        """Delete a blob from the bucket.
+
         Parameters
         ----------
         bucket_name : str
@@ -132,15 +147,16 @@ class GoogleCloudStorage:
         blob.delete()
         logging.info(f"Deleted blob: {blob_name}")
 
-    def delete_files_with_prefix(self, bucket_name: str, prefix: str=None) -> None:
+    def delete_files_with_prefix(self, bucket_name: str, prefix: str | None=None) -> None:
         """Use a batch request to delete a list of objects with the given prefix in a bucket.
 
         Parameters
         ----------
         bucket_name : str
             The name of the bucket that the file will be uploaded in.
-        prefix : str
-            The prefix of the object paths
+        prefix : str, optional
+            The path prefix of the object to be deleted.
+            If left unspecified the entire bucket's content will be deleted.
         """
         blobs_to_delete = self.list_blobs_with_prefix(bucket_name, prefix)
         with self.client.batch():
@@ -159,7 +175,7 @@ class GoogleCloudStorage:
         Parameters
         ----------
         bucket_name : str
-            The name of the bucket that the file will be uploaded in.
+            The name of the bucket whose content will be listed.
         """
         try:
             blobs = self.client.list_blobs(bucket_name)
@@ -169,10 +185,16 @@ class GoogleCloudStorage:
         except Exception as e:
             logging.error(f"An error occurred while listing blobs: {e}")
 
-    def list_blobs_with_prefix(self, bucket_name, prefix) -> list:
-        """Lists all the blobs in the bucket that begin with the prefix.
-        """
+    def list_blobs_with_prefix(self, bucket_name:str, prefix:str) -> list:
+        """List all the blobs in the bucket that begin with the prefix.
 
+        Parameters
+        ----------
+        bucket_name : str
+            The name of the bucket whose content will be listed.
+        prefix_filter : str
+            The path prefix to filter the content that will be listed.
+        """
         # Note: Client.list_blobs requires at least package version 1.17.0.
         blobs = self.client.list_blobs(bucket_name, prefix=prefix)
 
@@ -180,11 +202,24 @@ class GoogleCloudStorage:
 
 # ----------------------------------- Misc. -----------------------------------
 
-    def extract_zip_files(self, bucket_name:str, prefix_filter:str, landing_bucket_name:str, landing_prefix:str=None) -> list[str]:
-        """Extracts all the .zip files from a bucket that begin with the prefix and save them to another bucket.
+    def extract_zip_files(
+        self,
+        bucket_name:str,
+        prefix_filter:str,
+        landing_bucket_name:str,
+        landing_prefix:str | None=None
+    ) -> list[str]:
+        """Extract all the .zip files from a bucket that begin with the prefix and save them to another bucket.
+
+        Parameters
+        ----------
+        bucket_name : str
+            The name of the bucket that the file will be uploaded in.
+        prefix_filter : str
+            The path prefix of the `.zip` files to be extracted.
         """
         bucket = self.client.get_bucket(bucket_name)
-        
+
         landing_bucket = self.client.get_bucket(landing_bucket_name)
 
         blobs = self.list_blobs_with_prefix(bucket_name, prefix_filter)
@@ -194,30 +229,40 @@ class GoogleCloudStorage:
         for blob_path in blob_paths:
             blob = bucket.blob(blob_path)
             zipbytes = io.BytesIO(blob.download_as_string())
-            
+
             if is_zipfile(zipbytes):
-                with ZipFile(zipbytes, 'r') as myzip:
+                with ZipFile(zipbytes, "r") as myzip:
                     for contentfilename in myzip.namelist():
                         contentfile = myzip.read(contentfilename)
                         if landing_prefix:
-                            blob = landing_bucket.blob(landing_prefix.removesuffix("/") + "/" + contentfilename)
+                            blob_destination = f"{landing_prefix.removesuffix("/")}/{contentfilename}"
+                            blob = landing_bucket.blob(blob_destination)
                         else:
-                            blob = landing_bucket.blob(blob_path.removesuffix('.zip') + "/" + contentfilename)
+                            blob_destination = f"{blob_path.removesuffix(".zip")}/{contentfilename}"
+                            blob = landing_bucket.blob(blob_destination)
                         blob.upload_from_string(contentfile)
 
         return blob_paths # list of zip files extracted
 
     def convert_json_to_jsonl(self, bucket_name:str, prefix_filter:str) -> None:
-    
+        """Convert .json files to .jsonl in specified bucket that begin with the prefix.
+
+        Parameters
+        ----------
+        bucket_name : str
+            The name of the bucket that the `.json` file is located in.
+        prefix_filter : str
+            The path prefix of the `.json` file paths to be converted.
+        """
         bucket = self.client.get_bucket(bucket_name)
 
         landing_blobs = self.list_blobs_with_prefix(bucket_name, prefix_filter)
         landing_blob_paths = [blob.name for blob in landing_blobs]
-        json_blobs = [p for p in landing_blob_paths if re.search(r'\.json$', p) is not None]
+        json_blobs = [p for p in landing_blob_paths if re.search(r"\.json$", p) is not None]
 
         for json_blob in json_blobs:
             blob = bucket.blob(json_blob)
-            blob_content = blob.download_as_string().decode('utf-8', 'replace')
+            blob_content = blob.download_as_string().decode("utf-8", "replace")
             data = json.loads(blob_content)
             jsonl_blob = bucket.blob(json_blob+"l")
             if isinstance(data, dict):
