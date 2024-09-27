@@ -17,3 +17,6 @@ _version.py
 
 # Environment Variables
 .envrc
+
+# dlt
+.dlt/

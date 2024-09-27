@@ -8,6 +8,7 @@ import io
 import json
 import logging
 import re
+from collections.abc import Iterator
 from zipfile import ZipFile, is_zipfile
 
 from google.cloud.storage import Client, transfer_manager
@@ -169,7 +170,7 @@ class GoogleCloudStorage:
 
 # ----------------------------------- List -----------------------------------
 
-    def list_blob_files(self, bucket_name: str) -> list:
+    def list_blob_files(self, bucket_name: str) -> Iterator:
         """Fetch all blob files within a GCS bucket.
 
         Parameters
@@ -185,7 +186,7 @@ class GoogleCloudStorage:
         except Exception as e:
             logging.error(f"An error occurred while listing blobs: {e}")
 
-    def list_blobs_with_prefix(self, bucket_name:str, prefix:str) -> list:
+    def list_blobs_with_prefix(self, bucket_name:str, prefix:str) -> Iterator:
         """List all the blobs in the bucket that begin with the prefix.
 
         Parameters
@@ -199,6 +200,24 @@ class GoogleCloudStorage:
         blobs = self.client.list_blobs(bucket_name, prefix=prefix)
 
         return blobs
+
+    # inspiration: https://github.com/googleapis/google-cloud-python/issues/920#issuecomment-653823847
+    def list_subfolders(self, bucket_name:str, prefix:str) -> Iterator:
+        """List all the subfolders in the bucket that begin with the prefix.
+
+        Parameters
+        ----------
+        bucket_name : str
+            The name of the bucket whose content will be listed.
+        prefix_filter : str
+            The path prefix to filter the content that will be listed.
+        """
+        iterator = self.client.list_blobs(bucket_name, prefix=prefix, delimiter='/')
+        prefixes = set()
+        for page in iterator.pages:
+            prefixes.update(page.prefixes)
+        return prefixes
+
 
 # ----------------------------------- Misc. -----------------------------------
 
@@ -272,3 +291,11 @@ class GoogleCloudStorage:
                 for datum in data:
                     content = content + json.dumps(datum) + "\n"
                 jsonl_blob.upload_from_string(content)
+
+    def download_blob_as_string(self, bucket_name:str, blob_path:str) -> str:
+        """Download blob file as string."""
+        bucket = self.client.get_bucket(bucket_name)
+
+        blob = bucket.blob(blob_path)
+        blob_content = blob.download_as_string().decode("utf-8", "replace")
+        return blob_content

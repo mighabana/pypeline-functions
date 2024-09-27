@@ -35,7 +35,5 @@ if __name__ == "__main__":
 
     if landing_prefix == "":
         blob_paths = gcs.extract_zip_files("data-seeds", prefix_filter, args.landing_bucket_name)
-        gcs.convert_json_to_jsonl(args.landing_bucket_name, prefix_filter)
     else:
         blob_paths = gcs.extract_zip_files("data-seeds", prefix_filter, args.landing_bucket_name, args.landing_prefix)
-        gcs.convert_json_to_jsonl(args.landing_bucket_name, args.landing_prefix)

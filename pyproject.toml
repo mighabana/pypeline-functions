@@ -24,6 +24,7 @@ dependencies = [
     "google-cloud-bigquery-storage",
     "google-cloud-storage",
     "fastparquet",
+    "pydantic",
 ]
 
 # list of possible classifiers: https://pypi.org/classifiers/
@@ -92,6 +93,8 @@ lint.ignore = [
     "PLR0913",
     # Ignore generic `df` variable name for DataFrames
     "PD901",
+    # Ignore mixed variable case for class scope
+    "N815",
 ]
 lint.pydocstyle.convention = "numpy"
 
