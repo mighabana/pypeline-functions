@@ -25,6 +25,8 @@ dependencies = [
     "fastparquet>=2024.5.0",
     "pydantic>=2.9.0",
     "dlt>=1.0.0",
+    "streamunzip>=0.0.90",
+    "python-magic>=0.4.27",
 ]
 
 # list of possible classifiers: https://pypi.org/classifiers/
@@ -42,6 +44,7 @@ classifiers = [
 dev = [
     "ruff",
     "pre-commit",
+    "memray",
 ]
 
 [project.scripts]

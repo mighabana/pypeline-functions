@@ -33,8 +33,8 @@ def google_takeout_seed(bucket_name: str) -> Sequence[DltResource]:
         for seed in latest_seeds:
             content = seed.download_as_string().decode("utf-8", "replace")
             data = json.loads(content)
-            data = [gt.chrome_history_parser(datum) for datum in data.get("BrowserHistory", [])]
-            yield data
+            for datum in data.get("BrowserHistory", []):
+                yield gt.chrome_history_parser(datum)
 
     @dlt.resource(name="activity", write_disposition="merge", primary_key=("header", "title", "time"), columns=Activity)
     def activity() -> Iterable[Activity]:
@@ -43,8 +43,8 @@ def google_takeout_seed(bucket_name: str) -> Sequence[DltResource]:
         for seed in latest_seeds:
             content = seed.download_as_string().decode("utf-8", "replace")
             data = json.loads(content)
-            data = [gt.activity_parser(datum) for datum in data]
-            yield data
+            for datum in data:
+                yield gt.activity_parser(datum)
 
     @dlt.resource(
         name="location", write_disposition="merge", primary_key=("lat", "lng", "start_time"), columns=PlaceVisit
@@ -57,7 +57,8 @@ def google_takeout_seed(bucket_name: str) -> Sequence[DltResource]:
         for seed in latest_seeds:
             content = seed.download_as_string().decode("utf-8", "replace")
             data = json.loads(content)
-            data = [gt.location_parser(datum) for datum in data if "placeVisit" in data]
-            yield data
+            if "placeVisit" in data:
+                for datum in data:
+                    yield gt.location_parser(datum)
 
     return chrome_history, activity, location

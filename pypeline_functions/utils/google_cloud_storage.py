@@ -4,15 +4,16 @@ This module provides:
 - TargetGoogleCloudStorage: class containing helper functions for authenticating, uploading and managing files in GCS.
 """
 
-import io
 import json
 import logging
 import re
-from collections.abc import Iterator
+from collections.abc import Iterable, Iterator
 from datetime import datetime
-from zipfile import ZipFile, is_zipfile
+from io import BytesIO
 
+from google.api_core.exceptions import RequestRangeNotSatisfiable
 from google.cloud.storage import Blob, Client, transfer_manager
+from stream_unzip import stream_unzip
 
 
 # TODO: add logging to all functions
@@ -205,6 +206,18 @@ class GoogleCloudStorage:
 
     # ----------------------------------- Misc. -----------------------------------
 
+    def _zipped_chunks(self, blob: Blob) -> Iterable[BytesIO]:
+        chunk_size = 536870912  # 500 MB
+        start = 0
+        while True:
+            end = start + chunk_size - 1
+            try:
+                chunk = blob.download_as_bytes(start=start, end=end)
+            except RequestRangeNotSatisfiable:
+                break
+            yield bytes(chunk)
+            start += chunk_size
+
     def extract_zip_files(
         self, bucket_name: str, prefix_filter: str, landing_bucket_name: str, landing_prefix: str | None = None
     ) -> list[str]:
@@ -227,19 +240,18 @@ class GoogleCloudStorage:
         # NOTE: we can't use batching because the payload must be less than 10MB (https://cloud.google.com/storage/docs/batch#overview)
         for blob_path in blob_paths:
             blob = bucket.blob(blob_path)
-            zipbytes = io.BytesIO(blob.download_as_string())
 
-            if is_zipfile(zipbytes):
-                with ZipFile(zipbytes, "r") as myzip:
-                    for contentfilename in myzip.namelist():
-                        contentfile = myzip.read(contentfilename)
-                        if landing_prefix:
-                            blob_destination = f"{landing_prefix.removesuffix("/")}/{contentfilename}"
-                            blob = landing_bucket.blob(blob_destination)
-                        else:
-                            blob_destination = f"{blob_path.removesuffix(".zip")}/{contentfilename}"
-                            blob = landing_bucket.blob(blob_destination)
-                        blob.upload_from_string(contentfile)
+            for file_name, file_size, unzipped_chunks in stream_unzip(self._zipped_chunks(blob), chunk_size=536870912):
+                name = file_name.decode("utf-8")
+                print(f"Processing file: {name}")
+                for chunk in unzipped_chunks:
+                    if landing_prefix:
+                        blob_destination = f"{landing_prefix.removesuffix("/")}/{name}"
+                        landing_blob = landing_bucket.blob(blob_destination)
+                    else:
+                        blob_destination = f"{blob_path.removesuffix(".zip")}/{name}"
+                        landing_blob = landing_bucket.blob(blob_destination)
+                    landing_blob.upload_from_file(file_obj=BytesIO(chunk), size=file_size, content_type="text/plain")
 
         return blob_paths  # list of zip files extracted
 
