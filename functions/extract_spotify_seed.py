@@ -7,8 +7,7 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(
-        description="Extracts the spotify data seed (.zip) files and dumps them into another bucket \
-            with all .json files converted to .jsonl"
+        description="Extracts the spotify data seed (.zip) files and dumps them into another bucket."
     )
     parser.add_argument(
         "--data_type", type=str, choices=["account_data", "streaming_history"], required=True,

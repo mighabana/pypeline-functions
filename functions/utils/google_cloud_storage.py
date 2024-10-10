@@ -245,9 +245,10 @@ class GoogleCloudStorage:
         blob_paths = [blob.name for blob in blobs]
 
         # NOTE: we can't use batching because the payload must be less than 10MB (https://cloud.google.com/storage/docs/batch#overview)
+        # TODO: convert to a async streaming solution... uploading really large zip files takes too long
         for blob_path in blob_paths:
             blob = bucket.blob(blob_path)
-            zipbytes = io.BytesIO(blob.download_as_string())
+            zipbytes = io.BytesIO(blob.download_as_bytes(timeout=300))
 
             if is_zipfile(zipbytes):
                 with ZipFile(zipbytes, "r") as myzip:
@@ -255,11 +256,11 @@ class GoogleCloudStorage:
                         contentfile = myzip.read(contentfilename)
                         if landing_prefix:
                             blob_destination = f"{landing_prefix.removesuffix("/")}/{contentfilename}"
-                            blob = landing_bucket.blob(blob_destination)
+                            landing_blob = landing_bucket.blob(blob_destination)
                         else:
                             blob_destination = f"{blob_path.removesuffix(".zip")}/{contentfilename}"
-                            blob = landing_bucket.blob(blob_destination)
-                        blob.upload_from_string(contentfile)
+                            landing_blob = landing_bucket.blob(blob_destination)
+                        landing_blob.upload_from_string(contentfile, timeout=300)
 
         return blob_paths # list of zip files extracted
 

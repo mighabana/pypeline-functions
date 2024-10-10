@@ -16,15 +16,12 @@ keywords = [
 ]
 authors = [{name = "Miguel Habana", email = "mighabana@gmail.com"}]
 dependencies = [
-    "pyodbc",
-    "sshtunnel",
-    "pandas",
     "google-auth",
     "google-cloud-bigquery",
     "google-cloud-bigquery-storage",
     "google-cloud-storage",
-    "fastparquet",
     "pydantic",
+    "streamunzip",
 ]
 
 # list of possible classifiers: https://pypi.org/classifiers/
