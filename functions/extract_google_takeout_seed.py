@@ -3,14 +3,14 @@
 from utils.google_cloud_storage import GoogleCloudStorage
 
 
-def extract_spotify_seed(
+def extract_google_takeout_seed(
     landing_bucket_name:str,
     landing_prefix:str
 ) -> None:
-    """Run the extraction pipeline for the Spotify data seed."""
+    """Run the extraction pipeline for the Google Takeout data seed."""
     gcs = GoogleCloudStorage()
 
-    prefix_filter = f"spotify/{args.data_type}"
+    prefix_filter = "google/takeout"
 
     if landing_prefix == "":
         blob_paths = gcs.extract_zip_files("data-seeds", prefix_filter, landing_bucket_name)
@@ -24,12 +24,7 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(
-        description="Extracts the spotify data seed (.zip) files and dumps them into another bucket \
-            with all .json files converted to .jsonl"
-    )
-    parser.add_argument(
-        "--data_type", type=str, choices=["account_data", "streaming_history"], required=True,
-        help="the data type to extract. either the account data or the extended streaming history"
+        description="Extracts the google takeout seed (.zip) files and dumps them into another bucket."
     )
     parser.add_argument(
         "--landing_bucket_name", type=str, required=True,
@@ -43,7 +38,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    extract_spotify_seed(
+    extract_google_takeout_seed(
         args.landing_bucket_name,
         args.landing_prefix
     )

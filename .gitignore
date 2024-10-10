@@ -16,6 +16,7 @@ _version.py
 *.xlsx
 
 # Environment Variables
+.env
 .envrc
 
 # dlt

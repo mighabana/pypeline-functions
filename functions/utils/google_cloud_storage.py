@@ -211,7 +211,7 @@ class GoogleCloudStorage:
         prefix_filter : str
             The path prefix to filter the content that will be listed.
         """
-        iterator = self.client.list_blobs(bucket_name, prefix=prefix, delimiter='/')
+        iterator = self.client.list_blobs(bucket_name, prefix=prefix, delimiter="/")
         prefixes = set()
         for page in iterator.pages:
             prefixes.update(page.prefixes)

@@ -97,6 +97,10 @@ lint.ignore = [
     # Ignore mixed variable case for class scope
     "N815",
 ]
+
+[tool.ruff.lint.per-file-ignores]
+"models/*" = ["D101"]
+
 lint.pydocstyle.convention = "numpy"
 
 # Additional configurations should include unit testing and test coverage (see pytest and pytest-cov respectively)
