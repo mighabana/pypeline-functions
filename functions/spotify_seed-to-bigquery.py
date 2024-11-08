@@ -1,11 +1,9 @@
 #!/usr/bin/env python
 
 import dlt
-from prefect import flow
 from sources.spotify_seed import spotify_seed
 
 
-@flow(log_prints=True, persist_result=False)
 def spotify_seed_to_bigquery(
     bucket_name:str,
     dataset_name:str

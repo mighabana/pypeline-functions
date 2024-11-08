@@ -1,10 +1,8 @@
 #!/usr/bin/env python
 
-from prefect import flow
 from utils.google_cloud_storage import GoogleCloudStorage
 
 
-@flow(log_prints=True, persist_result=False)
 def extract_spotify_seed(
     landing_bucket_name:str,
     landing_prefix:str
