@@ -12,6 +12,7 @@ from collections.abc import Iterator
 from zipfile import ZipFile, is_zipfile
 
 from google.cloud.storage import Client, transfer_manager
+from prefect import task
 
 
 # TODO: add logging to all functions
@@ -44,7 +45,7 @@ class GoogleCloudStorage:
 
 # ----------------------------------- Upload -----------------------------------
 # inspiration: https://cloud.google.com/storage/docs/uploading-objects
-
+    @task(persist_result=False)
     def upload(
         self,
         source_file:str,
@@ -66,6 +67,7 @@ class GoogleCloudStorage:
         blob = bucket.blob(file_path)
         blob.upload_from_filename(source_file)
 
+    @task(persist_result=False)
     def upload_many_blobs_with_transfer_manager(
         self,
         bucket_name:str,
@@ -89,6 +91,7 @@ class GoogleCloudStorage:
             else:
                 print(f"Uploaded {name} to {bucket.name}.")
 
+    @task(persist_result=False)
     def upload_directory_with_transfer_manager(
         self,
         bucket_name:str,
@@ -132,6 +135,7 @@ class GoogleCloudStorage:
 
 # ----------------------------------- Delete -----------------------------------
 
+    @task(persist_result=False)
     def detele_file(self, bucket_name:str, blob_name:str) -> None:
         """Delete a blob from the bucket.
 
@@ -148,6 +152,7 @@ class GoogleCloudStorage:
         blob.delete()
         logging.info(f"Deleted blob: {blob_name}")
 
+    @task(persist_result=False)
     def delete_files_with_prefix(self, bucket_name: str, prefix: str | None=None) -> None:
         """Use a batch request to delete a list of objects with the given prefix in a bucket.
 
@@ -170,6 +175,7 @@ class GoogleCloudStorage:
 
 # ----------------------------------- List -----------------------------------
 
+    @task(persist_result=False)
     def list_blob_files(self, bucket_name: str) -> Iterator:
         """Fetch all blob files within a GCS bucket.
 
@@ -186,6 +192,7 @@ class GoogleCloudStorage:
         except Exception as e:
             logging.error(f"An error occurred while listing blobs: {e}")
 
+    @task(persist_result=False)
     def list_blobs_with_prefix(self, bucket_name:str, prefix:str) -> Iterator:
         """List all the blobs in the bucket that begin with the prefix.
 
@@ -197,11 +204,12 @@ class GoogleCloudStorage:
             The path prefix to filter the content that will be listed.
         """
         # Note: Client.list_blobs requires at least package version 1.17.0.
-        blobs = self.client.list_blobs(bucket_name, prefix=prefix)
+        blobs = list(self.client.list_blobs(bucket_name, prefix=prefix))
 
         return blobs
 
     # inspiration: https://github.com/googleapis/google-cloud-python/issues/920#issuecomment-653823847
+    @task(persist_result=False)
     def list_subfolders(self, bucket_name:str, prefix:str) -> Iterator:
         """List all the subfolders in the bucket that begin with the prefix.
 
@@ -221,6 +229,7 @@ class GoogleCloudStorage:
 
 # ----------------------------------- Misc. -----------------------------------
 
+    @task(persist_result=False)
     def extract_zip_files(
         self,
         bucket_name:str,
@@ -263,6 +272,7 @@ class GoogleCloudStorage:
 
         return blob_paths # list of zip files extracted
 
+    @task(persist_result=False)
     def convert_json_to_jsonl(self, bucket_name:str, prefix_filter:str) -> None:
         """Convert .json files to .jsonl in specified bucket that begin with the prefix.
 
@@ -292,6 +302,7 @@ class GoogleCloudStorage:
                     content = content + json.dumps(datum) + "\n"
                 jsonl_blob.upload_from_string(content)
 
+    @task(persist_result=False)
     def download_blob_as_string(self, bucket_name:str, blob_path:str) -> str:
         """Download blob file as string."""
         bucket = self.client.get_bucket(bucket_name)

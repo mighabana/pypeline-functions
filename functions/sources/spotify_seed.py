@@ -49,7 +49,7 @@ def spotify_seed(bucket_name:str) -> Sequence[DltResource]:
             mode="before"
         )(default_str)
 
-    class SearchQuery(BaseModel):
+    class SearchQueries(BaseModel):
         platform: str
         searchTime: datetime.datetime
         searchQuery: str
@@ -235,12 +235,12 @@ def spotify_seed(bucket_name:str) -> Sequence[DltResource]:
         yield data
 
     # TODO: fix whatever is going on here.. something with the the data types of the searchQuery data types not matching
-    @dlt.resource(name="search_query", write_disposition="merge", primary_key="searchTime", columns=SearchQuery)
-    def search_query():
-        latest_seed = _get_latest_seed(ACCOUNT_DATA_PATH, "SearchQueries.json")
-        content = latest_seed.download_as_string().decode("utf-8", "replace")
-        data = json.loads(content, object_hook=_datetime_parser)
-        yield data
+    # @dlt.resource(name="search_query", write_disposition="merge", primary_key="searchTime", columns=SearchQueries)
+    # def search_query():
+    #     latest_seed = _get_latest_seed(ACCOUNT_DATA_PATH, "SearchQueries.json")
+    #     content = latest_seed.download_as_string().decode("utf-8", "replace")
+    #     data = json.loads(content, object_hook=_datetime_parser)
+    #     yield data
 
     @dlt.resource(name="user_data", write_disposition="replace", columns=UserData)
     def user_data():
@@ -266,4 +266,5 @@ def spotify_seed(bucket_name:str) -> Sequence[DltResource]:
             yield data
 
 
-    return follow_data, identifier, marquee, user_data, library, search_query, audio_streaming_history
+    # return follow_data, identifier, marquee, user_data, library, search_query, audio_streaming_history
+    return follow_data, identifier, marquee, user_data, library, audio_streaming_history

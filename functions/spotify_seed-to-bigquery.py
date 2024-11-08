@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 
 import dlt
+from prefect import flow
 from sources.spotify_seed import spotify_seed
 
 
-def pipeline_run(
+@flow(log_prints=True, persist_result=False)
+def spotify_seed_to_bigquery(
     bucket_name:str,
     dataset_name:str
 ) -> None:
@@ -12,7 +14,8 @@ def pipeline_run(
     pipeline = dlt.pipeline(
         pipeline_name="spotify_seed",
         dataset_name=dataset_name,
-        destination="bigquery"
+        destination="bigquery",
+        dev_mode=True
     )
 
     data = spotify_seed(bucket_name)
@@ -35,7 +38,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    pipeline_run(
+    spotify_seed_to_bigquery(
         args.bucket_name,
         args.dataset_name
     )

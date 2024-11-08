@@ -1,6 +1,25 @@
 #!/usr/bin/env python
 
+from prefect import flow
 from utils.google_cloud_storage import GoogleCloudStorage
+
+
+@flow(log_prints=True, persist_result=False)
+def extract_spotify_seed(
+    landing_bucket_name:str,
+    landing_prefix:str
+) -> None:
+    """Run the extraction pipeline for the Spotify data seed"""
+    gcs = GoogleCloudStorage()
+
+    prefix_filter = f"spotify/{args.data_type}"
+
+    if landing_prefix == "":
+        blob_paths = gcs.extract_zip_files("data-seeds", prefix_filter, landing_bucket_name)
+    else:
+        blob_paths = gcs.extract_zip_files("data-seeds", prefix_filter, landing_bucket_name, landing_prefix)
+
+    print(blob_paths)
 
 if __name__ == "__main__":
 
@@ -26,14 +45,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    landing_bucket_name = args.landing_bucket_name
-    landing_prefix = args.landing_prefix
-
-    gcs = GoogleCloudStorage()
-
-    prefix_filter = f"spotify/{args.data_type}"
-
-    if landing_prefix == "":
-        blob_paths = gcs.extract_zip_files("data-seeds", prefix_filter, args.landing_bucket_name)
-    else:
-        blob_paths = gcs.extract_zip_files("data-seeds", prefix_filter, args.landing_bucket_name, args.landing_prefix)
+    extract_spotify_seed(
+        args.landing_bucket_name,
+        args.landing_prefix
+    )

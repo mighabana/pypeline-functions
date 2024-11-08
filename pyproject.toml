@@ -25,6 +25,7 @@ dependencies = [
     "google-cloud-storage",
     "fastparquet",
     "pydantic",
+    "prefect",
 ]
 
 # list of possible classifiers: https://pypi.org/classifiers/
