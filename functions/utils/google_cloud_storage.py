@@ -9,9 +9,10 @@ import json
 import logging
 import re
 from collections.abc import Iterator
+from datetime import datetime
 from zipfile import ZipFile, is_zipfile
 
-from google.cloud.storage import Client, transfer_manager
+from google.cloud.storage import Blob, Client, transfer_manager
 
 
 # TODO: add logging to all functions
@@ -292,9 +293,51 @@ class GoogleCloudStorage:
                 jsonl_blob.upload_from_string(content)
 
     def download_blob_as_string(self, bucket_name:str, blob_path:str) -> str:
-        """Download blob file as string."""
+        """
+        Download blob file as string.
+
+        Parameters
+        ----------
+        bucket_name : str
+            The name of the bucket that the blob is located in.
+        blob_path : str
+            The path to the blob that will be downloaded.
+        """
         bucket = self.client.get_bucket(bucket_name)
 
         blob = bucket.blob(blob_path)
         blob_content = blob.download_as_string().decode("utf-8", "replace")
         return blob_content
+
+    def get_latest_seeds(self, bucket_name:str, prefix:str, file_name:str, datetime_format: str) -> Blob:
+        """
+        Locate the latest data seeds for a given file name suffix based on the provided datetime_format.
+
+        Parameters
+        ----------
+        bucket_name : str
+            The name of the bucket that the data seed is located in.
+        prefix : str
+            The path prefix to filter the search results.
+        file_name : str
+            The file name of the data seed that corresponds to the path suffix that you wish to match.
+        datetime_format : str
+            The datetime string format to match in order to find the latest data seed entry.
+        """
+        subfolders = self.list_subfolders(bucket_name, prefix)
+        timestamps = []
+
+        for folder in subfolders:
+            t = folder.removeprefix(prefix).removesuffix("/")
+            timestamp = datetime.strptime(t, datetime_format) #noqa: DTZ007
+            timestamps.append(timestamp)
+
+        latest_timestamp = max(timestamps)
+        latest_seed = f"{prefix}{latest_timestamp.strftime(datetime_format)}/"
+
+        blobs = self.list_blobs_with_prefix(bucket_name, latest_seed)
+        output = []
+        for blob in blobs:
+            if file_name in blob.name:
+                output.append(blob)
+        return output

@@ -1,10 +1,8 @@
 import json
 from collections.abc import Iterable, Sequence
-from datetime import datetime
 
 import dlt
 from dlt.sources import DltResource
-from google.cloud.storage import Blob
 from models.google_takeout import Activity, ChromeHistory, PlaceVisit
 from parsers.json_parser import GoogleTakeout
 from utils.google_cloud_storage import GoogleCloudStorage
@@ -21,28 +19,9 @@ def google_takeout_seed(bucket_name:str) -> Sequence[DltResource]:
         The name of the bucket that the seed is located in.
     """
     DATA_PATH = "google/takeout/"  # noqa: N806
+    DATETIME_FORMAT = "%Y%m%dT%H%M%SZ"  # noqa: N806
     gcs = GoogleCloudStorage()
     gt = GoogleTakeout()
-
-    def _get_latest_seeds(prefix:str, file_name:str) -> Blob:
-        datetime_format = "%Y%m%dT%H%M%SZ"
-        subfolders = gcs.list_subfolders(bucket_name, prefix)
-        timestamps = []
-
-        for folder in subfolders:
-            t = folder.removeprefix(prefix).removesuffix("/")
-            timestamp = datetime.strptime(t, datetime_format) #noqa: DTZ007
-            timestamps.append(timestamp)
-
-        latest_timestamp = max(timestamps)
-        latest_seed = f"{prefix}{latest_timestamp.strftime(datetime_format)}/"
-
-        blobs = gcs.list_blobs_with_prefix(bucket_name, latest_seed)
-        output = []
-        for blob in blobs:
-            if file_name in blob.name:
-                output.append(blob)
-        return output
 
     @dlt.resource(
         name="chrome_history",
@@ -52,7 +31,7 @@ def google_takeout_seed(bucket_name:str) -> Sequence[DltResource]:
     )
     def chrome_history() -> Iterable[ChromeHistory]:
         """Extract the latest chrome history data."""
-        latest_seeds = _get_latest_seeds(DATA_PATH, "Chrome/History.json")
+        latest_seeds = gcs.get_latest_seeds(bucket_name, DATA_PATH, "Chrome/History.json", DATETIME_FORMAT)
         for seed in latest_seeds:
             content = seed.download_as_string().decode("utf-8", "replace")
             data = json.loads(content)
@@ -67,7 +46,7 @@ def google_takeout_seed(bucket_name:str) -> Sequence[DltResource]:
     )
     def activity() -> Iterable[Activity]:
         """Extract the latest activity data."""
-        latest_seeds = _get_latest_seeds(DATA_PATH, "MyActivity.json")
+        latest_seeds = gcs.get_latest_seeds(bucket_name, DATA_PATH, "MyActivity.json", DATETIME_FORMAT)
         for seed in latest_seeds:
             content = seed.download_as_string().decode("utf-8", "replace")
             data = json.loads(content)
@@ -82,7 +61,12 @@ def google_takeout_seed(bucket_name:str) -> Sequence[DltResource]:
     )
     def location() -> Iterable[PlaceVisit]:
         """Extract the latest location data."""
-        latest_seeds = _get_latest_seeds(DATA_PATH, "Location History (Timeline)/Records.json")
+        latest_seeds = gcs.get_latest_seeds(
+            bucket_name,
+            DATA_PATH,
+            "Location History (Timeline)/Records.json",
+            DATETIME_FORMAT
+        )
         for seed in latest_seeds:
             content = seed.download_as_string().decode("utf-8", "replace")
             data = json.loads(content)

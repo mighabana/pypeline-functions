@@ -1,10 +1,8 @@
-import datetime
 import json
 from collections.abc import Iterable, Sequence
 
 import dlt
 from dlt.sources import DltResource
-from google.cloud.storage import Blob
 from models.spotify import FollowData, Identifier, Library, Marquee, SearchQueries, StreamingHistory, UserData
 from parsers.json_parser import Spotify
 from utils.google_cloud_storage import GoogleCloudStorage
@@ -22,26 +20,10 @@ def spotify_seed(bucket_name:str) -> Sequence[DltResource]:
     """
     ACCOUNT_DATA_PATH = "spotify/account_data/"  # noqa: N806
     STREAMING_HISTORY_PATH = "spotify/streaming_history" #noqa: N806
+    DATETIME_FORMAT = "%Y%m%dT%H%M%S"  # noqa: N806
     gcs = GoogleCloudStorage()
     spotify = Spotify()
 
-    def _get_latest_seed(prefix:str, file_name:str) -> Blob:
-        datetime_format = "%Y%m%dT%H%M%S"
-        subfolders = gcs.list_subfolders(bucket_name, prefix)
-        timestamps = []
-
-        for folder in subfolders:
-            t = folder.removeprefix(prefix).removesuffix("/")
-            timestamp = datetime.datetime.strptime(t, datetime_format) #noqa: DTZ007
-            timestamps.append(timestamp)
-
-        latest_timestamp = max(timestamps)
-        latest_seed = f"{prefix}{latest_timestamp.strftime(datetime_format)}/"
-
-        blobs = gcs.list_blobs_with_prefix(bucket_name, latest_seed)
-        for blob in blobs:
-            if file_name in blob.name:
-                return blob
 
     @dlt.resource(
         name="follow_data",
@@ -50,11 +32,12 @@ def spotify_seed(bucket_name:str) -> Sequence[DltResource]:
     )
     def follow_data() -> Iterable[FollowData]:
         """Extract the latest follow data."""
-        latest_seed = _get_latest_seed(ACCOUNT_DATA_PATH, "Follow.json")
-        content = latest_seed.download_as_string().decode("utf-8", "replace")
-        data = json.loads(content)
-        data = spotify.follow_data_parser(data)
-        yield data
+        latest_seeds = gcs.get_latest_seeds(bucket_name, ACCOUNT_DATA_PATH, "Follow.json", DATETIME_FORMAT)
+        for seed in latest_seeds:
+            content = seed.download_as_string().decode("utf-8", "replace")
+            data = json.loads(content)
+            data = spotify.follow_data_parser(data)
+            yield data
 
     @dlt.resource(
         name="identifier",
@@ -63,11 +46,12 @@ def spotify_seed(bucket_name:str) -> Sequence[DltResource]:
     )
     def identifier() -> Iterable[Identifier]:
         """Extract the latest identifier data."""
-        latest_seed = _get_latest_seed(ACCOUNT_DATA_PATH, "Identifiers.json")
-        content = latest_seed.download_as_string().decode("utf-8", "replace")
-        data = json.loads(content)
-        data = spotify.identifier_parser(data)
-        yield data
+        latest_seeds = gcs.get_latest_seeds(bucket_name, ACCOUNT_DATA_PATH, "Identifiers.json", DATETIME_FORMAT)
+        for seed in latest_seeds:
+            content = seed.download_as_string().decode("utf-8", "replace")
+            data = json.loads(content)
+            data = spotify.identifier_parser(data)
+            yield data
 
     @dlt.resource(
         name="marquee",
@@ -76,11 +60,12 @@ def spotify_seed(bucket_name:str) -> Sequence[DltResource]:
     )
     def marquee() -> Iterable[Marquee]:
         """Extract the latest marquee data."""
-        latest_seed = _get_latest_seed(ACCOUNT_DATA_PATH, "Marquee.json")
-        content = latest_seed.download_as_string().decode("utf-8", "replace")
-        data = json.loads(content)
-        data = [spotify.marquee_parser(datum) for datum in data]
-        yield data
+        latest_seeds = gcs.get_latest_seeds(bucket_name, ACCOUNT_DATA_PATH, "Marquee.json", DATETIME_FORMAT)
+        for seed in latest_seeds:
+            content = seed.download_as_string().decode("utf-8", "replace")
+            data = json.loads(content)
+            data = [spotify.marquee_parser(datum) for datum in data]
+            yield data
 
     @dlt.resource(
         name="search_queries",
@@ -90,11 +75,12 @@ def spotify_seed(bucket_name:str) -> Sequence[DltResource]:
     )
     def search_query() -> Iterable[SearchQueries]:
         """Extract the latest search query data."""
-        latest_seed = _get_latest_seed(ACCOUNT_DATA_PATH, "SearchQueries.json")
-        content = latest_seed.download_as_string().decode("utf-8", "replace")
-        data = json.loads(content)
-        data = [spotify.search_query_parser(datum) for datum in data]
-        yield data
+        latest_seeds = gcs.get_latest_seeds(bucket_name, ACCOUNT_DATA_PATH, "SearchQueries.json", DATETIME_FORMAT)
+        for seed in latest_seeds:
+            content = seed.download_as_string().decode("utf-8", "replace")
+            data = json.loads(content)
+            data = [spotify.search_query_parser(datum) for datum in data]
+            yield data
 
     @dlt.resource(
         name="user_data",
@@ -103,11 +89,12 @@ def spotify_seed(bucket_name:str) -> Sequence[DltResource]:
     )
     def user_data() -> Iterable[UserData]:
         """Extract the latest user data."""
-        latest_seed = _get_latest_seed(ACCOUNT_DATA_PATH, "Userdata.json")
-        content = latest_seed.download_as_string().decode("utf-8", "replace")
-        data = json.loads(content)
-        data = spotify.user_data_parser(data)
-        yield data
+        latest_seeds = gcs.get_latest_seeds(bucket_name, ACCOUNT_DATA_PATH, "Userdata.json", DATETIME_FORMAT)
+        for seed in latest_seeds:
+            content = seed.download_as_string().decode("utf-8", "replace")
+            data = json.loads(content)
+            data = spotify.user_data_parser(data)
+            yield data
 
     @dlt.resource(
         name="library",
@@ -116,11 +103,12 @@ def spotify_seed(bucket_name:str) -> Sequence[DltResource]:
     )
     def library() -> Iterable[Library]:
         """Extract the latest library data."""
-        latest_seed = _get_latest_seed(ACCOUNT_DATA_PATH, "YourLibrary.json")
-        content = latest_seed.download_as_string().decode("utf-8", "replace")
-        data = json.loads(content)
-        data = spotify.library_parser(data)
-        yield data
+        latest_seeds = gcs.get_latest_seeds(bucket_name, ACCOUNT_DATA_PATH, "YourLibrary.json", DATETIME_FORMAT)
+        for seed in latest_seeds:
+            content = seed.download_as_string().decode("utf-8", "replace")
+            data = json.loads(content)
+            data = spotify.library_parser(data)
+            yield data
 
     @dlt.resource(
         name="audio_streaming_history",
