@@ -1,7 +1,8 @@
-from typing import NamedTuple
 from datetime import datetime
+from typing import NamedTuple
 
 from pydantic import BaseModel, field_validator
+
 
 def default_str(string:str):
     """

@@ -8,7 +8,7 @@ def spotify_seed_to_bigquery(
     bucket_name:str,
     dataset_name:str
 ) -> None:
-    """Run the Spotify data seed to bigquery pipeline."""
+    """Run the Spotify data seed to BigQuery pipeline."""
     pipeline = dlt.pipeline(
         pipeline_name="spotify_seed",
         dataset_name=dataset_name,
