@@ -1,11 +1,30 @@
-from datetime import datetime, UTC
+from datetime import UTC, datetime
 
 
 class GoogleTakeout:
-    """
+    """Namespace for all the JSON parser functions for the Google Takeout data.
+
+    Methods
+    -------
+    chrome_history_parser(dct:dict) -> dict
+        Parse and format a single entry of the Google Chrome History data.
+    activity_parser(dct:dict) -> dict
+        Parse and format a single entry of the Google Activity data.
+    _candidate_location_parser(dct:dict) -> dict
+        Parse and format a single entry of the candidate locations from the Semantic Location History data.
+    location_parser(dct:dict) -> dict
+        Parse and format a single entry of the Semantic Location History data.
     """
 
     def chrome_history_parser(self, dct:dict) -> dict:
+        """
+        Parse and format a single entry of the Google Chrome History data.
+
+        Parameters
+        ----------
+        dct : dict
+            A dictionary representing a single entry of the Google Chrome History data.
+        """
         dct["title"] = dct.get("title", "")
         dct["page_transition"] = dct.get("page_transition", "")
         if isinstance(dct.get("ptoken", {}), dict) and len(dct.get("ptoken", {}) == 0):
@@ -19,7 +38,14 @@ class GoogleTakeout:
 
 
     def activity_parser(self, dct:dict) -> dict:
-        """"""
+        """
+        Parse and format a single entry of the Google Activity data.
+
+        Parameters
+        ----------
+        dct : dict
+            A dictionary representing a single entry of the Google Activity data.
+        """
         datetime_format = "%Y-%m-%dT%H:%M:%S.%fZ"
         dct["header"] = dct.get("header")
         dct["title"] = dct.get("title")
@@ -49,8 +75,16 @@ class GoogleTakeout:
         dct["products"] = dct.get("products")
         dct["activityControls"] = dct.get("activityControls")
         return dct
-    
+
     def _candidate_location_parser(self, dct:dict) -> dict:
+        """
+        Parse and format a single entry of the candidate locations from the Semantic Location History data.
+
+        Parameters
+        ----------
+        dct : dict
+            A dictionary representing a single entry of the candidate locations from the Semantic Location History data.
+        """
         output = {}
 
         output["lat"] = dct["centerLatE7"]
@@ -64,12 +98,18 @@ class GoogleTakeout:
         return output
 
     def location_parser(self, dct:dict) -> dict:
-        output = {}
-        
-        if "placeVisit" not in dct:
-            return
+        """
+        Parse and format a single entry of the Semantic Location History data.
 
-        place_visit = dct['placeVisit']
+        Parameters
+        ----------
+        dct : dict
+            A dictionary representing a single entry of the Semantic Location History data.
+        """
+        output = {}
+        datetime_format = "%Y-%m-%dT%H:%M:%SZ"
+
+        place_visit = dct["placeVisit"]
         location = place_visit["location"]
         duration = place_visit["duration"]
         output["lat"] = location.latitudeE7
@@ -80,8 +120,14 @@ class GoogleTakeout:
         output["name"] = location.get("name", None)
         output["calibrated_probability"] = location.get("calibratedProbability", None)
         output["device_tag"] = location.get("sourceInfo", {"deviceTag": None}).deviceTag
-        output["start_time"] = datetime.strptime(duration.startTimestamp, "%Y-%m-%dT%H:%M:%SZ") if duration.startTimestamp is not None else None
-        output["end_time"] = datetime.strptime(duration.endTimestamp, "%Y-%m-%dT%H:%M:%SZ") if duration.endTimestamp is not None else None
+        if duration.startTimestamp is None:
+            output["start_time"] = None
+        else:
+            output["start_time"] = datetime.strptime(duration.startTimestamp, datetime_format) # noqa: DTZ007
+        if duration.endTimestamp is None:
+            output["end_time"] = None
+        else:
+            output["end_time"] = datetime.strptime(duration.endTimestamp, datetime_format) # noqa: DTZ007
         output["center_lat"] = dct.get("centerLatE7", None)
         output["center_lng"] = dct.get("centerLngE7", None)
         output["place_confidence"] = dct.get("placeConfidence", None)
@@ -100,7 +146,42 @@ class GoogleTakeout:
         return output
 
 class Spotify:
+    """
+    Namespace for all the JSON parser functions for the Spotify data.
+
+    Methods
+    -------
+    follow_data_parser(dct:dict) -> dict
+        Parse and format the follow data.
+    identifier_parser(dct:dict) -> dict
+        Parse and format the identifier data.
+    marquee_parser(dct:dict) -> dict
+        Parse and format a single entry of the Marquee data.
+    search_query_parser(dct:dict) -> dict
+        Parse and format a single entry of the Search Query data.
+    user_data_parser(dct:dict) -> dict
+        Parse and format the User data.
+    _track_parser(dct:dict) -> dict
+        Parse and format a single entry of track data.
+    _album_parser(dct:dict) -> dict
+        Parse and format a single entry of album data.
+    _artist_parser(dct:dict) -> dict
+        Parse and format a single entry of artist data.
+    library_parser(dct:dict) -> dict
+        Parse and format a single entry of Music Library data.
+    streaming_history_parser(dct:dict) -> dict
+        Parse and format a single entry of Streaming History data.
+    """
+
     def follow_data_parser(self, dct:dict) -> dict:
+        """
+        Parse and format the follow data.
+
+        Parameters
+        ----------
+        dct : dict
+            A dictionary representing the follow data.
+        """
         output = {}
 
         output["follower_count"] = int(dct["followerCount"])
@@ -110,6 +191,14 @@ class Spotify:
         return output
 
     def identifier_parser(self, dct:dict) -> dict:
+        """
+        Parse and format the identifier data.
+
+        Parameters
+        ----------
+        dct : dict
+            A dictionary representing the identifier data.
+        """
         output = {}
 
         output["identifier_type"] = dct["identifierType"]
@@ -118,6 +207,14 @@ class Spotify:
         return output
 
     def marquee_parser(self, dct:dict) -> dict:
+        """
+        Parse and format a single entry of the Marquee data.
+
+        Parameters
+        ----------
+        dct : dict
+            A dictionary representing a single entry of the Marquee data.
+        """
         output = {}
 
         output["artist_name"] = dct["artistName"]
@@ -126,6 +223,14 @@ class Spotify:
         return output
 
     def search_query_parser(self, dct:dict) -> dict:
+        """
+        Parse and format the Search Query data.
+
+        Parameters
+        ----------
+        dct : dict
+            A dictionary representing the Search Query data.
+        """
         output = {}
 
         output["platform"] = dct["platform"]
@@ -142,6 +247,14 @@ class Spotify:
         return output
 
     def user_data_parser(self, dct:dict) -> dict:
+        """
+        Parse and format the user data.
+
+        Parameters
+        ----------
+        dct : dict
+            A dictionary representing the user data.
+        """
         output = {}
 
         output["username"] = dct.get("username", None)
@@ -159,7 +272,15 @@ class Spotify:
 
         return output
 
-    def track_parser(self, dct:dict) -> dict:
+    def _track_parser(self, dct:dict) -> dict:
+        """
+        Parse and format a single entry of track data.
+
+        Parameters
+        ----------
+        dct : dict
+            A dictionary representing a single entry of track data.
+        """
         output = {}
 
         output["artist"] = dct.get("artist", "")
@@ -169,7 +290,15 @@ class Spotify:
 
         return output
 
-    def album_parser(self, dct:dict) -> dict:
+    def _album_parser(self, dct:dict) -> dict:
+        """
+        Parse and format a single entry of album data.
+
+        Parameters
+        ----------
+        dct : dict
+            A dictionary representing a single entry of album data.
+        """
         output = {}
 
         output["artist"] = dct.get("artist", "")
@@ -178,7 +307,15 @@ class Spotify:
 
         return output
 
-    def artist_parser(self, dct:dict) -> dict:
+    def _artist_parser(self, dct:dict) -> dict:
+        """
+        Parse and format a single entry of artist data.
+
+        Parameters
+        ----------
+        dct : dict
+            A dictionary representing a single entry of artist data.
+        """
         output = {}
 
         output["name"] = dct.get("name", "")
@@ -187,26 +324,42 @@ class Spotify:
         return output
 
     def library_parser(self, dct:dict) -> dict:
+        """
+        Parse and format a single entry of Music Library data.
+
+        Parameters
+        ----------
+        dct : dict
+            A dictionary representing a signle entry of Music Library data.
+        """
         output = {}
 
-        output["tracks"] = [self.track_parser(datum) for datum in dct.get("tracks", [])]
-        output["albums"] = [self.album_parser(datum) for datum in dct.get("albums", [])]
+        output["tracks"] = [self._track_parser(datum) for datum in dct.get("tracks", [])]
+        output["albums"] = [self._album_parser(datum) for datum in dct.get("albums", [])]
         output["shows"] = dct.get("shows", None)
         output["episodes"] = dct.get("episodes", None)
         if (len(dct["bannedTracks"]) == 0) | (dct["bannedTracks"] is None):
             output["banned_tracks"] = None
         else:
-            output["banned_tracks"] = [self.track_parser(datum) for datum in dct.get("bannedTracks", [])]
-        output["artists"] = [self.artist_parser(datum) for datum in dct.get("artists", [])]
+            output["banned_tracks"] = [self._track_parser(datum) for datum in dct.get("bannedTracks", [])]
+        output["artists"] = [self._artist_parser(datum) for datum in dct.get("artists", [])]
         if (len(dct["bannedArtists"]) == 0) | (dct["bannedArtists"] is None):
             output["banned_artists"] = None
         else:
-            output["banned_artists"] = [self.artist_parser(datum) for datum in dct.get("bannedArtists", [])]
+            output["banned_artists"] = [self._artist_parser(datum) for datum in dct.get("bannedArtists", [])]
         output["other"] = dct.get("other", None)
 
         return output
 
     def streaming_history_parser(self, dct:dict) -> dict:
+        """
+        Parse and format a single entry of Streaming History data.
+
+        Parameters
+        ----------
+        dct : dict
+            A dictionary representing a single entry of Streaming History data.
+        """
         output = {}
 
         output["ts"] = datetime.strptime(dct["ts"], "%Y-%m-%dT%H:%M:%SZ")  # noqa: DTZ007

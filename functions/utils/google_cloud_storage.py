@@ -16,7 +16,7 @@ from google.cloud.storage import Client, transfer_manager
 
 # TODO: add logging to all functions
 class GoogleCloudStorage:
-    """A data target helper class for authenticating, uploading and managing files in Google Cloud Storage.
+    """A helper class for authenticating, uploading and managing files in Google Cloud Storage.
 
     Attributes
     ----------

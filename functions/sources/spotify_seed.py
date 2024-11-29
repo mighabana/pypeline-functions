@@ -1,6 +1,6 @@
 import datetime
 import json
-from collections.abc import Sequence
+from collections.abc import Iterable, Sequence
 
 import dlt
 from dlt.sources import DltResource
@@ -13,8 +13,13 @@ from utils.google_cloud_storage import GoogleCloudStorage
 @dlt.source
 def spotify_seed(bucket_name:str) -> Sequence[DltResource]:
     """
-    """
+    Extract data from the Spotify seed located in Google Cloud Storage.
 
+    Parameters
+    ----------
+    bucket_name : str
+        The name of the bucket that the seed is located in.
+    """
     ACCOUNT_DATA_PATH = "spotify/account_data/"  # noqa: N806
     STREAMING_HISTORY_PATH = "spotify/streaming_history" #noqa: N806
     gcs = GoogleCloudStorage()
@@ -43,7 +48,8 @@ def spotify_seed(bucket_name:str) -> Sequence[DltResource]:
         write_disposition="replace",
         columns=FollowData
     )
-    def follow_data():
+    def follow_data() -> Iterable[FollowData]:
+        """Extract the latest follow data."""
         latest_seed = _get_latest_seed(ACCOUNT_DATA_PATH, "Follow.json")
         content = latest_seed.download_as_string().decode("utf-8", "replace")
         data = json.loads(content)
@@ -55,7 +61,8 @@ def spotify_seed(bucket_name:str) -> Sequence[DltResource]:
         write_disposition="replace",
         columns=Identifier
     )
-    def identifier():
+    def identifier() -> Iterable[Identifier]:
+        """Extract the latest identifier data."""
         latest_seed = _get_latest_seed(ACCOUNT_DATA_PATH, "Identifiers.json")
         content = latest_seed.download_as_string().decode("utf-8", "replace")
         data = json.loads(content)
@@ -67,21 +74,22 @@ def spotify_seed(bucket_name:str) -> Sequence[DltResource]:
         write_disposition="replace",
         columns=Marquee
     )
-    def marquee():
+    def marquee() -> Iterable[Marquee]:
+        """Extract the latest marquee data."""
         latest_seed = _get_latest_seed(ACCOUNT_DATA_PATH, "Marquee.json")
         content = latest_seed.download_as_string().decode("utf-8", "replace")
         data = json.loads(content)
         data = [spotify.marquee_parser(datum) for datum in data]
         yield data
 
-    # TODO: fix whatever is going on here.. something with the the data types of the searchQuery data types not matching
     @dlt.resource(
         name="search_queries",
         write_disposition="merge",
         primary_key=("search_query", "search_time"),
         columns=SearchQueries
     )
-    def search_query():
+    def search_query() -> Iterable[SearchQueries]:
+        """Extract the latest search query data."""
         latest_seed = _get_latest_seed(ACCOUNT_DATA_PATH, "SearchQueries.json")
         content = latest_seed.download_as_string().decode("utf-8", "replace")
         data = json.loads(content)
@@ -93,7 +101,8 @@ def spotify_seed(bucket_name:str) -> Sequence[DltResource]:
         write_disposition="replace",
         columns=UserData
     )
-    def user_data():
+    def user_data() -> Iterable[UserData]:
+        """Extract the latest user data."""
         latest_seed = _get_latest_seed(ACCOUNT_DATA_PATH, "Userdata.json")
         content = latest_seed.download_as_string().decode("utf-8", "replace")
         data = json.loads(content)
@@ -105,7 +114,8 @@ def spotify_seed(bucket_name:str) -> Sequence[DltResource]:
         write_disposition="replace",
         columns=Library
     )
-    def library():
+    def library() -> Iterable[Library]:
+        """Extract the latest library data."""
         latest_seed = _get_latest_seed(ACCOUNT_DATA_PATH, "YourLibrary.json")
         content = latest_seed.download_as_string().decode("utf-8", "replace")
         data = json.loads(content)
@@ -118,7 +128,8 @@ def spotify_seed(bucket_name:str) -> Sequence[DltResource]:
         primary_key="ts",
         columns=StreamingHistory
     )
-    def audio_streaming_history():
+    def audio_streaming_history() -> Iterable[StreamingHistory]:
+        """Extract the latest audio streaming history data."""
         blobs = gcs.list_blobs_with_prefix(bucket_name=bucket_name, prefix=STREAMING_HISTORY_PATH)
         streaming_history_files = [blob for blob in blobs if blob.name.endswith(".json") and "Audio" in blob.name]
         for f in streaming_history_files:

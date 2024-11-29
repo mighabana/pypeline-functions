@@ -4,9 +4,8 @@ from typing import NamedTuple
 from pydantic import BaseModel, field_validator
 
 
-def default_str(string:str):
-    """
-    """
+def default_str(string:str) -> str:
+    """Coerce the default string value to a blank string."""
     if string is not None:
         return string
     else:

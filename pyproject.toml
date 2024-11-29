@@ -102,5 +102,6 @@ lint.pydocstyle.convention = "numpy"
 
 [tool.ruff.lint.per-file-ignores]
 "functions/models/*" = ["D101"]
+"functions/sources/*" = ["PLR0915"]
 
 # Additional configurations should include unit testing and test coverage (see pytest and pytest-cov respectively)

@@ -24,7 +24,9 @@ def spotify_seed_to_bigquery(
 if __name__ == "__main__":
     import argparse
 
-    parser = argparse.ArgumentParser(description="Transfers data from the Spotify data seed file on GCS to BigQuery using dlt")
+    parser = argparse.ArgumentParser(
+        description="Transfers data from the Spotify data seed file on GCS to BigQuery using dlt"
+    )
     parser.add_argument(
         "--bucket_name", type=str, required=True,
         help="name of the bucket where the .json files are stored"

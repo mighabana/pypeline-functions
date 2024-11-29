@@ -3,6 +3,7 @@
 import dlt
 from sources.google_takeout_seed import google_takeout_seed
 
+
 def google_takeout_seed_to_bigquery(
     bucket_name:str,
     dataset_name:str
@@ -23,7 +24,9 @@ def google_takeout_seed_to_bigquery(
 if __name__ == "__main__":
     import argparse
 
-    parser = argparse.ArgumentParser(description="Transfers data from the Google Takeout data seed file on GCS to BigQuery using dlt")
+    parser = argparse.ArgumentParser(
+        description="Transfers data from the Google Takeout data seed file on GCS to BigQuery using dlt"
+    )
     parser.add_argument(
         "--bucket_name", type=str, required=True,
         help="name of the bucket where the .json files are stored"
