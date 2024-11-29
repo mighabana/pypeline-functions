@@ -3,29 +3,27 @@ requires = ["hatchling", "hatch-vcs"]
 build-backend = "hatchling.build"
 
 [project]
-
 name = "pypeline-functions"
 dynamic = ["version"]
 description = "A compiliation of data pipeline scripts in Python"
 readme = "README.md"
 license = { text = "MIT" }
-requires-python = ">= 3.11"
+requires-python = ">= 3.9"
 keywords = [
     "data pipelines",
-    ""
+    "ELT",
+    "dlt",
+    "pypeline",
 ]
 authors = [{name = "Miguel Habana", email = "mighabana@gmail.com"}]
 dependencies = [
-    "pyodbc",
-    "sshtunnel",
-    "pandas",
-    "google-auth",
-    "google-cloud-bigquery",
-    "google-cloud-bigquery-storage",
-    "google-cloud-storage",
-    "fastparquet",
-    "pydantic",
-    "prefect",
+    "pandas>=2.2.0",
+    "google-auth>=2.34.0",
+    "google-cloud-bigquery>=3.25.0",
+    "google-cloud-bigquery-storage>=2.26.0",
+    "google-cloud-storage>=2.18.0",
+    "fastparquet>=2024.5.0",
+    "pydantic>=2.9.0",
 ]
 
 # list of possible classifiers: https://pypi.org/classifiers/
@@ -35,20 +33,57 @@ classifiers = [
     "Topic :: Software Development :: Libraries",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
 ]
 
 [project.optional-dependencies]
-
 dev = [
-    "ruff"
+    "ruff",
 ]
+
+[project.scripts]
+extract_google_takeout_seed = "pypeline_functions.extract_google_takeout_seed:main"
+extract_spotify_seed = "pypeline_functions.spotify_seed:main"
+google_takeout_seed_to_bigquery = "pypeline_functions.google_takeout_seed_to_bigquery:main"
+spotify_seed_to_bigquery = "pypeline_functions.spotify_seed_to_bigquery:main"
 
 [tool.hatch]
 # using hatch-vcs (https://github.com/ofek/hatch-vcs/tree/master) for single-source package versioning
 version.source = "vcs"
-build.hooks.vcs.version-file = "_version.py"
+version.template = "{tag}"
+
+[tool.hatch.build]
+hooks.vcs.version-file = "_version.py"
+include = [
+    "/pypeline_functions",
+    "README.md"
+]
+exclude = [
+    "__pycache__",
+    "*.pyc",
+    "*.pyo",
+    "*.log",
+    "dist/",
+    "build/",
+    "tests/",
+    ".git/",
+    "venv/",
+]
+
+[tool.hatch.build.targets.sdist]
+exclude = [
+    "tests/",
+    "*.tmp",
+    "*.bak",
+]
+
+[tool.hatch.build.targets.wheel]
+include = [
+    "/pypeline_functions",
+]
 
 [tool.ruff]
 line-length = 120
@@ -101,7 +136,8 @@ lint.ignore = [
 lint.pydocstyle.convention = "numpy"
 
 [tool.ruff.lint.per-file-ignores]
-"functions/models/*" = ["D101"]
-"functions/sources/*" = ["PLR0915"]
+"pypeline_functions/models/*" = ["D101"]
+"pypeline_functions/sources/*" = ["PLR0915"]
+"pypeline_functions/__init__.py" = ["D104", "E402"]
 
 # Additional configurations should include unit testing and test coverage (see pytest and pytest-cov respectively)

@@ -3,9 +3,10 @@ from collections.abc import Iterable, Sequence
 
 import dlt
 from dlt.sources import DltResource
-from models.spotify import FollowData, Identifier, Library, Marquee, SearchQueries, StreamingHistory, UserData
-from parsers.json_parser import Spotify
-from utils.google_cloud_storage import GoogleCloudStorage
+
+from ..models.spotify import FollowData, Identifier, Library, Marquee, SearchQueries, StreamingHistory, UserData
+from ..parsers.json_parser import Spotify
+from ..utils.google_cloud_storage import GoogleCloudStorage
 
 
 @dlt.source

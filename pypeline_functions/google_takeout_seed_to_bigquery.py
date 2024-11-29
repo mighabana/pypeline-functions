@@ -1,31 +1,32 @@
 #!/usr/bin/env python
 
 import dlt
-from sources.spotify_seed import spotify_seed
+
+from .sources.google_takeout_seed import google_takeout_seed
 
 
-def spotify_seed_to_bigquery(
+def google_takeout_seed_to_bigquery(
     bucket_name:str,
     dataset_name:str
 ) -> None:
-    """Run the Spotify data seed to BigQuery pipeline."""
+    """Run the Google Takeout data seed to BigQuery pipeline."""
     pipeline = dlt.pipeline(
-        pipeline_name="spotify_seed",
+        pipeline_name="google_takeout_seed",
         dataset_name=dataset_name,
         destination="bigquery",
         dev_mode=True
     )
 
-    data = spotify_seed(bucket_name)
+    data = google_takeout_seed(bucket_name)
 
     info = pipeline.run(data)
     print(info)
 
-if __name__ == "__main__":
+def main() -> None:  # noqa: D103
     import argparse
 
     parser = argparse.ArgumentParser(
-        description="Transfers data from the Spotify data seed file on GCS to BigQuery using dlt"
+        description="Transfers data from the Google Takeout data seed file on GCS to BigQuery using dlt"
     )
     parser.add_argument(
         "--bucket_name", type=str, required=True,
@@ -38,7 +39,11 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    spotify_seed_to_bigquery(
+    google_takeout_seed_to_bigquery(
         args.bucket_name,
         args.dataset_name
     )
+
+
+if __name__ == "__main__":
+    main()

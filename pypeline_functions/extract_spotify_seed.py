@@ -1,16 +1,17 @@
 #!/usr/bin/env python
 
-from utils.google_cloud_storage import GoogleCloudStorage
+from .utils.google_cloud_storage import GoogleCloudStorage
 
 
 def extract_spotify_seed(
     landing_bucket_name:str,
-    landing_prefix:str
+    landing_prefix:str,
+    data_type:str
 ) -> None:
     """Run the extraction pipeline for the Spotify data seed."""
     gcs = GoogleCloudStorage()
 
-    prefix_filter = f"spotify/{args.data_type}"
+    prefix_filter = f"spotify/{data_type}"
 
     if landing_prefix == "":
         blob_paths = gcs.extract_zip_files("data-seeds", prefix_filter, landing_bucket_name)
@@ -19,8 +20,7 @@ def extract_spotify_seed(
 
     print(blob_paths)
 
-if __name__ == "__main__":
-
+def main() -> None:  # noqa: D103
     import argparse
 
     parser = argparse.ArgumentParser(
@@ -45,5 +45,9 @@ if __name__ == "__main__":
 
     extract_spotify_seed(
         args.landing_bucket_name,
-        args.landing_prefix
+        args.landing_prefix,
+        args.data_type
     )
+
+if __name__ == "__main__":
+    main()

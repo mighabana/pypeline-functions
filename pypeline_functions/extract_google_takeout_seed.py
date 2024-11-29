@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from utils.google_cloud_storage import GoogleCloudStorage
+from .utils.google_cloud_storage import GoogleCloudStorage
 
 
 def extract_google_takeout_seed(
@@ -19,8 +19,7 @@ def extract_google_takeout_seed(
 
     print(blob_paths)
 
-if __name__ == "__main__":
-
+def main() -> None:  # noqa: D103
     import argparse
 
     parser = argparse.ArgumentParser(
@@ -42,3 +41,6 @@ if __name__ == "__main__":
         args.landing_bucket_name,
         args.landing_prefix
     )
+
+if __name__ == "__main__":
+    main()

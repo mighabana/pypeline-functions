@@ -3,9 +3,10 @@ from collections.abc import Iterable, Sequence
 
 import dlt
 from dlt.sources import DltResource
-from models.google_takeout import Activity, ChromeHistory, PlaceVisit
-from parsers.json_parser import GoogleTakeout
-from utils.google_cloud_storage import GoogleCloudStorage
+
+from ..models.google_takeout import Activity, ChromeHistory, PlaceVisit
+from ..parsers.json_parser import GoogleTakeout
+from ..utils.google_cloud_storage import GoogleCloudStorage
 
 
 @dlt.source
