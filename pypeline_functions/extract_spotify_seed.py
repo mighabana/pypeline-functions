@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from .utils.google_cloud_storage import GoogleCloudStorage
+from pypeline_functions.utils.google_cloud_storage import GoogleCloudStorage
 
 
 def extract_spotify_seed(landing_bucket_name: str, landing_prefix: str, data_type: str) -> None:

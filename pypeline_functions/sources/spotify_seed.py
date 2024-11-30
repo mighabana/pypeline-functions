@@ -4,9 +4,17 @@ from collections.abc import Iterable, Sequence
 import dlt
 from dlt.sources import DltResource
 
-from ..models.spotify import FollowData, Identifier, Library, Marquee, SearchQueries, StreamingHistory, UserData
-from ..parsers.json_parser import Spotify
-from ..utils.google_cloud_storage import GoogleCloudStorage
+from pypeline_functions.models.spotify import (
+    FollowData,
+    Identifier,
+    Library,
+    Marquee,
+    SearchQueries,
+    StreamingHistory,
+    UserData,
+)
+from pypeline_functions.parsers.json_parser import SpotifyParser
+from pypeline_functions.utils.google_cloud_storage import GoogleCloudStorage
 
 
 @dlt.source
@@ -23,7 +31,7 @@ def spotify_seed(bucket_name: str) -> Sequence[DltResource]:
     STREAMING_HISTORY_PATH = "spotify/streaming_history"  # noqa: N806
     DATETIME_FORMAT = "%Y%m%dT%H%M%S"  # noqa: N806
     gcs = GoogleCloudStorage()
-    spotify = Spotify()
+    spotify = SpotifyParser()
 
     @dlt.resource(name="follow_data", write_disposition="replace", columns=FollowData)
     def follow_data() -> Iterable[FollowData]:

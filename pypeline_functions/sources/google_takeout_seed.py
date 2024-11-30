@@ -4,9 +4,9 @@ from collections.abc import Iterable, Sequence
 import dlt
 from dlt.sources import DltResource
 
-from ..models.google_takeout import Activity, ChromeHistory, PlaceVisit
-from ..parsers.json_parser import GoogleTakeout
-from ..utils.google_cloud_storage import GoogleCloudStorage
+from pypeline_functions.models.google_takeout import Activity, ChromeHistory, PlaceVisit
+from pypeline_functions.parsers.json_parser import GoogleTakeoutParser
+from pypeline_functions.utils.google_cloud_storage import GoogleCloudStorage
 
 
 @dlt.source
@@ -22,7 +22,7 @@ def google_takeout_seed(bucket_name: str) -> Sequence[DltResource]:
     DATA_PATH = "google/takeout/"  # noqa: N806
     DATETIME_FORMAT = "%Y%m%dT%H%M%SZ"  # noqa: N806
     gcs = GoogleCloudStorage()
-    gt = GoogleTakeout()
+    gt = GoogleTakeoutParser()
 
     @dlt.resource(
         name="chrome_history", write_disposition="merge", primary_key=("time_usec", "title"), columns=ChromeHistory

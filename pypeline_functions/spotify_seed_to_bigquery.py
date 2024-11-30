@@ -2,7 +2,7 @@
 
 import dlt
 
-from .sources.spotify_seed import spotify_seed
+from pypeline_functions.sources.spotify_seed import spotify_seed
 
 
 def spotify_seed_to_bigquery(bucket_name: str, dataset_name: str) -> None:

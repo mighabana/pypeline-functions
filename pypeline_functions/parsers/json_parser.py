@@ -1,7 +1,7 @@
 from datetime import UTC, datetime
 
 
-class GoogleTakeout:
+class GoogleTakeoutParser:
     """Namespace for all the JSON parser functions for the Google Takeout data.
 
     Methods
@@ -140,7 +140,7 @@ class GoogleTakeout:
         return output
 
 
-class Spotify:
+class SpotifyParser:
     """
     Namespace for all the JSON parser functions for the Spotify data.
 

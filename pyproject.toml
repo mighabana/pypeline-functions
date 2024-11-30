@@ -119,6 +119,8 @@ lint.extend-select = [
 lint.ignore = [
     # Ignore docstring in public module
     "D100",
+    # Ignore `self` and `cls` type annotations
+    "ANN101", "ANN102",
     # Ignore checks for the `assert` keyword
     "S101", 
     # Ignore checks for possible passwords
@@ -138,6 +140,6 @@ lint.pydocstyle.convention = "numpy"
 [tool.ruff.lint.per-file-ignores]
 "pypeline_functions/models/*" = ["D101"]
 "pypeline_functions/sources/*" = ["PLR0915"]
-"pypeline_functions/__init__.py" = ["D104", "E402"]
+"**/__init__.py" = ["D104", "E402"]
 
 # Additional configurations should include unit testing and test coverage (see pytest and pytest-cov respectively)

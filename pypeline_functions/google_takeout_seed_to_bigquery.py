@@ -2,7 +2,7 @@
 
 import dlt
 
-from .sources.google_takeout_seed import google_takeout_seed
+from pypeline_functions.sources.google_takeout_seed import google_takeout_seed
 
 
 def google_takeout_seed_to_bigquery(bucket_name: str, dataset_name: str) -> None:
