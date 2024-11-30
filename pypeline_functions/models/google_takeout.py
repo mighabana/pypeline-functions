@@ -4,12 +4,13 @@ from typing import NamedTuple
 from pydantic import BaseModel, field_validator
 
 
-def default_str(string:str) -> str:
+def default_str(string: str) -> str:
     """Coerce the default string value to a blank string."""
     if string is not None:
         return string
     else:
         return ""
+
 
 class CandidateLocation(BaseModel):
     lat: float
@@ -19,6 +20,7 @@ class CandidateLocation(BaseModel):
     place_id: str
     semantic_type: str | None
     location_confidence: float | None  # missing in older (around 2014/15) history
+
 
 class PlaceVisit(BaseModel):
     lat: float
@@ -40,6 +42,7 @@ class PlaceVisit(BaseModel):
     edit_confirmation_status: str | None
     place_visit_importance: str | None
 
+
 class ChromeHistory(BaseModel):
     title: str
     page_transition: str
@@ -47,18 +50,17 @@ class ChromeHistory(BaseModel):
     url: str
     time_usec: datetime
 
-    _default_str = field_validator(
-        "title",
-        "page_transition",
-        "url"
-    )(default_str)
+    _default_str = field_validator("title", "page_transition", "url")(default_str)
+
 
 class Subtitles(NamedTuple):
     name: str
     url: str | None
 
+
 class Details(NamedTuple):
     name: str
+
 
 class Activity(BaseModel):
     header: str

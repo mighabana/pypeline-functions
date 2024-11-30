@@ -16,7 +16,7 @@ class GoogleTakeout:
         Parse and format a single entry of the Semantic Location History data.
     """
 
-    def chrome_history_parser(self, dct:dict) -> dict:
+    def chrome_history_parser(self, dct: dict) -> dict:
         """
         Parse and format a single entry of the Google Chrome History data.
 
@@ -36,8 +36,7 @@ class GoogleTakeout:
         dct["url"] = dct.get("url", "")
         dct["time_usec"] = datetime.fromtimestamp(dct.get("time_usec", 0) / 10**6, UTC)
 
-
-    def activity_parser(self, dct:dict) -> dict:
+    def activity_parser(self, dct: dict) -> dict:
         """
         Parse and format a single entry of the Google Activity data.
 
@@ -60,23 +59,18 @@ class GoogleTakeout:
         subtitles = dct.get("subtitles", [])
         _subtitles = []
         for subtitle in subtitles:
-            _subtitles.append({
-                "name": subtitle.get("name", ""),
-                "url": subtitle.get("url", None)
-            })
+            _subtitles.append({"name": subtitle.get("name", ""), "url": subtitle.get("url", None)})
         dct["subtitles"] = _subtitles
         details = dct.get("details", [])
         _details = []
         for detail in details:
-            _details.append({
-                "name": detail.get("name", "")
-            })
+            _details.append({"name": detail.get("name", "")})
         dct["details"] = _details
         dct["products"] = dct.get("products")
         dct["activityControls"] = dct.get("activityControls")
         return dct
 
-    def _candidate_location_parser(self, dct:dict) -> dict:
+    def _candidate_location_parser(self, dct: dict) -> dict:
         """
         Parse and format a single entry of the candidate locations from the Semantic Location History data.
 
@@ -97,7 +91,7 @@ class GoogleTakeout:
 
         return output
 
-    def location_parser(self, dct:dict) -> dict:
+    def location_parser(self, dct: dict) -> dict:
         """
         Parse and format a single entry of the Semantic Location History data.
 
@@ -123,11 +117,11 @@ class GoogleTakeout:
         if duration.startTimestamp is None:
             output["start_time"] = None
         else:
-            output["start_time"] = datetime.strptime(duration.startTimestamp, datetime_format) # noqa: DTZ007
+            output["start_time"] = datetime.strptime(duration.startTimestamp, datetime_format)  # noqa: DTZ007
         if duration.endTimestamp is None:
             output["end_time"] = None
         else:
-            output["end_time"] = datetime.strptime(duration.endTimestamp, datetime_format) # noqa: DTZ007
+            output["end_time"] = datetime.strptime(duration.endTimestamp, datetime_format)  # noqa: DTZ007
         output["center_lat"] = dct.get("centerLatE7", None)
         output["center_lng"] = dct.get("centerLngE7", None)
         output["place_confidence"] = dct.get("placeConfidence", None)
@@ -144,6 +138,7 @@ class GoogleTakeout:
         output["candidate_locations"] = parsed_locations
 
         return output
+
 
 class Spotify:
     """
@@ -173,7 +168,7 @@ class Spotify:
         Parse and format a single entry of Streaming History data.
     """
 
-    def follow_data_parser(self, dct:dict) -> dict:
+    def follow_data_parser(self, dct: dict) -> dict:
         """
         Parse and format the follow data.
 
@@ -190,7 +185,7 @@ class Spotify:
 
         return output
 
-    def identifier_parser(self, dct:dict) -> dict:
+    def identifier_parser(self, dct: dict) -> dict:
         """
         Parse and format the identifier data.
 
@@ -206,7 +201,7 @@ class Spotify:
 
         return output
 
-    def marquee_parser(self, dct:dict) -> dict:
+    def marquee_parser(self, dct: dict) -> dict:
         """
         Parse and format a single entry of the Marquee data.
 
@@ -222,7 +217,7 @@ class Spotify:
 
         return output
 
-    def search_query_parser(self, dct:dict) -> dict:
+    def search_query_parser(self, dct: dict) -> dict:
         """
         Parse and format the Search Query data.
 
@@ -239,14 +234,14 @@ class Spotify:
         else:
             output["search_time"] = None
         output["search_query"] = dct["searchQuery"]
-        if (len(dct["searchInteractionURIs"]) == 0):
+        if len(dct["searchInteractionURIs"]) == 0:
             output["search_interaction_URIs"] = None
         else:
             output["search_interaction_URIs"] = dct.get("searchInteractionURIs", None)
 
         return output
 
-    def user_data_parser(self, dct:dict) -> dict:
+    def user_data_parser(self, dct: dict) -> dict:
         """
         Parse and format the user data.
 
@@ -262,7 +257,7 @@ class Spotify:
         output["country"] = dct["country"]
         output["created_from_facebook"] = dct["createdFromFacebook"]
         output["facebook_UID"] = dct.get("facebookUid", None)
-        output["birthdate"] = datetime.strptime(dct["birthdate"][:10], "%Y-%m-%d") # noqa: DTZ007
+        output["birthdate"] = datetime.strptime(dct["birthdate"][:10], "%Y-%m-%d")  # noqa: DTZ007
         output["gender"] = dct["gender"]
         output["postal_code"] = dct.get("postalCode", None)
         output["mobile_number"] = dct.get("mobileNumber", None)
@@ -272,7 +267,7 @@ class Spotify:
 
         return output
 
-    def _track_parser(self, dct:dict) -> dict:
+    def _track_parser(self, dct: dict) -> dict:
         """
         Parse and format a single entry of track data.
 
@@ -290,7 +285,7 @@ class Spotify:
 
         return output
 
-    def _album_parser(self, dct:dict) -> dict:
+    def _album_parser(self, dct: dict) -> dict:
         """
         Parse and format a single entry of album data.
 
@@ -307,7 +302,7 @@ class Spotify:
 
         return output
 
-    def _artist_parser(self, dct:dict) -> dict:
+    def _artist_parser(self, dct: dict) -> dict:
         """
         Parse and format a single entry of artist data.
 
@@ -323,7 +318,7 @@ class Spotify:
 
         return output
 
-    def library_parser(self, dct:dict) -> dict:
+    def library_parser(self, dct: dict) -> dict:
         """
         Parse and format a single entry of Music Library data.
 
@@ -351,7 +346,7 @@ class Spotify:
 
         return output
 
-    def streaming_history_parser(self, dct:dict) -> dict:
+    def streaming_history_parser(self, dct: dict) -> dict:
         """
         Parse and format a single entry of Streaming History data.
 

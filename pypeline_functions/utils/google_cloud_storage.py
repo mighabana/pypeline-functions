@@ -43,14 +43,9 @@ class GoogleCloudStorage:
     def __init__(self) -> None:
         self.client = Client()
 
-# ----------------------------------- Upload -----------------------------------
-# inspiration: https://cloud.google.com/storage/docs/uploading-objects
-    def upload(
-        self,
-        source_file:str,
-        bucket_name:str,
-        file_path:str
-    ) -> bool:
+    # ----------------------------------- Upload -----------------------------------
+    # inspiration: https://cloud.google.com/storage/docs/uploading-objects
+    def upload(self, source_file: str, bucket_name: str, file_path: str) -> bool:
         """Upload a single file to Google Cloud Storage at the specified destination.
 
         Parameters
@@ -67,11 +62,7 @@ class GoogleCloudStorage:
         blob.upload_from_filename(source_file)
 
     def upload_many_blobs_with_transfer_manager(
-        self,
-        bucket_name:str,
-        filenames:list[str],
-        source_directory:str="",
-        workers:int=8
+        self, bucket_name: str, filenames: list[str], source_directory: str = "", workers: int = 8
     ) -> None:
         """Upload every file in a list to a bucket, concurrently in a process pool."""
         bucket = self.client.bucket(bucket_name)
@@ -89,12 +80,7 @@ class GoogleCloudStorage:
             else:
                 print(f"Uploaded {name} to {bucket.name}.")
 
-    def upload_directory_with_transfer_manager(
-        self,
-        bucket_name:str,
-        source_directory:str,
-        workers:int=8
-    ) -> None:
+    def upload_directory_with_transfer_manager(self, bucket_name: str, source_directory: str, workers: int = 8) -> None:
         """Upload every file in a directory, including all files in subdirectories."""
         from pathlib import Path
 
@@ -130,9 +116,9 @@ class GoogleCloudStorage:
             else:
                 logging.info(f"Uploaded {name} to {bucket.name}.")
 
-# ----------------------------------- Delete -----------------------------------
+    # ----------------------------------- Delete -----------------------------------
 
-    def detele_file(self, bucket_name:str, blob_name:str) -> None:
+    def detele_file(self, bucket_name: str, blob_name: str) -> None:
         """Delete a blob from the bucket.
 
         Parameters
@@ -148,7 +134,7 @@ class GoogleCloudStorage:
         blob.delete()
         logging.info(f"Deleted blob: {blob_name}")
 
-    def delete_files_with_prefix(self, bucket_name: str, prefix: str | None=None) -> None:
+    def delete_files_with_prefix(self, bucket_name: str, prefix: str | None = None) -> None:
         """Use a batch request to delete a list of objects with the given prefix in a bucket.
 
         Parameters
@@ -167,8 +153,7 @@ class GoogleCloudStorage:
             logging.info("Files inside the specified GCS blob directory have been deleted successfully.")
             return True
 
-
-# ----------------------------------- List -----------------------------------
+    # ----------------------------------- List -----------------------------------
 
     def list_blob_files(self, bucket_name: str) -> Iterator:
         """Fetch all blob files within a GCS bucket.
@@ -186,7 +171,7 @@ class GoogleCloudStorage:
         except Exception as e:
             logging.error(f"An error occurred while listing blobs: {e}")
 
-    def list_blobs_with_prefix(self, bucket_name:str, prefix:str) -> Iterator:
+    def list_blobs_with_prefix(self, bucket_name: str, prefix: str) -> Iterator:
         """List all the blobs in the bucket that begin with the prefix.
 
         Parameters
@@ -202,7 +187,7 @@ class GoogleCloudStorage:
         return blobs
 
     # inspiration: https://github.com/googleapis/google-cloud-python/issues/920#issuecomment-653823847
-    def list_subfolders(self, bucket_name:str, prefix:str) -> Iterator:
+    def list_subfolders(self, bucket_name: str, prefix: str) -> Iterator:
         """List all the subfolders in the bucket that begin with the prefix.
 
         Parameters
@@ -218,15 +203,10 @@ class GoogleCloudStorage:
             prefixes.update(page.prefixes)
         return prefixes
 
-
-# ----------------------------------- Misc. -----------------------------------
+    # ----------------------------------- Misc. -----------------------------------
 
     def extract_zip_files(
-        self,
-        bucket_name:str,
-        prefix_filter:str,
-        landing_bucket_name:str,
-        landing_prefix:str | None=None
+        self, bucket_name: str, prefix_filter: str, landing_bucket_name: str, landing_prefix: str | None = None
     ) -> list[str]:
         """Extract all the .zip files from a bucket that begin with the prefix and save them to another bucket.
 
@@ -261,9 +241,9 @@ class GoogleCloudStorage:
                             blob = landing_bucket.blob(blob_destination)
                         blob.upload_from_string(contentfile)
 
-        return blob_paths # list of zip files extracted
+        return blob_paths  # list of zip files extracted
 
-    def convert_json_to_jsonl(self, bucket_name:str, prefix_filter:str) -> None:
+    def convert_json_to_jsonl(self, bucket_name: str, prefix_filter: str) -> None:
         """Convert .json files to .jsonl in specified bucket that begin with the prefix.
 
         Parameters
@@ -283,7 +263,7 @@ class GoogleCloudStorage:
             blob = bucket.blob(json_blob)
             blob_content = blob.download_as_string().decode("utf-8", "replace")
             data = json.loads(blob_content)
-            jsonl_blob = bucket.blob(json_blob+"l")
+            jsonl_blob = bucket.blob(json_blob + "l")
             if isinstance(data, dict):
                 jsonl_blob.upload_from_string(json.dumps(data))
             elif isinstance(data, list):
@@ -292,7 +272,7 @@ class GoogleCloudStorage:
                     content = content + json.dumps(datum) + "\n"
                 jsonl_blob.upload_from_string(content)
 
-    def download_blob_as_string(self, bucket_name:str, blob_path:str) -> str:
+    def download_blob_as_string(self, bucket_name: str, blob_path: str) -> str:
         """
         Download blob file as string.
 
@@ -309,7 +289,7 @@ class GoogleCloudStorage:
         blob_content = blob.download_as_string().decode("utf-8", "replace")
         return blob_content
 
-    def get_latest_seeds(self, bucket_name:str, prefix:str, file_name:str, datetime_format: str) -> Blob:
+    def get_latest_seeds(self, bucket_name: str, prefix: str, file_name: str, datetime_format: str) -> Blob:
         """
         Locate the latest data seeds for a given file name suffix based on the provided datetime_format.
 
@@ -329,7 +309,7 @@ class GoogleCloudStorage:
 
         for folder in subfolders:
             t = folder.removeprefix(prefix).removesuffix("/")
-            timestamp = datetime.strptime(t, datetime_format) #noqa: DTZ007
+            timestamp = datetime.strptime(t, datetime_format)  # noqa: DTZ007
             timestamps.append(timestamp)
 
         latest_timestamp = max(timestamps)

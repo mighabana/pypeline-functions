@@ -3,11 +3,7 @@
 from .utils.google_cloud_storage import GoogleCloudStorage
 
 
-def extract_spotify_seed(
-    landing_bucket_name:str,
-    landing_prefix:str,
-    data_type:str
-) -> None:
+def extract_spotify_seed(landing_bucket_name: str, landing_prefix: str, data_type: str) -> None:
     """Run the extraction pipeline for the Spotify data seed."""
     gcs = GoogleCloudStorage()
 
@@ -20,6 +16,7 @@ def extract_spotify_seed(
 
     print(blob_paths)
 
+
 def main() -> None:  # noqa: D103
     import argparse
 
@@ -28,26 +25,28 @@ def main() -> None:  # noqa: D103
             with all .json files converted to .jsonl"
     )
     parser.add_argument(
-        "--data_type", type=str, choices=["account_data", "streaming_history"], required=True,
-        help="the data type to extract. either the account data or the extended streaming history"
+        "--data_type",
+        type=str,
+        choices=["account_data", "streaming_history"],
+        required=True,
+        help="the data type to extract. either the account data or the extended streaming history",
     )
     parser.add_argument(
-        "--landing_bucket_name", type=str, required=True,
-        help="name of the bucket to store the extracted data seeds"
+        "--landing_bucket_name", type=str, required=True, help="name of the bucket to store the extracted data seeds"
     )
     parser.add_argument(
-        "--landing_prefix", nargs="?", type=str, default="",
+        "--landing_prefix",
+        nargs="?",
+        type=str,
+        default="",
         help="prefix path location where the extract will be stored. \
-            if undeclared it will use the same prefix path as the source"
+            if undeclared it will use the same prefix path as the source",
     )
 
     args = parser.parse_args()
 
-    extract_spotify_seed(
-        args.landing_bucket_name,
-        args.landing_prefix,
-        args.data_type
-    )
+    extract_spotify_seed(args.landing_bucket_name, args.landing_prefix, args.data_type)
+
 
 if __name__ == "__main__":
     main()

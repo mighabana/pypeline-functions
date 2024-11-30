@@ -4,37 +4,33 @@ from typing import NamedTuple
 from pydantic import BaseModel, field_validator
 
 
-def default_str(string:str) -> str:
+def default_str(string: str) -> str:
     """Coerce the default string value to a blank string."""
     if string is not None:
         return string
     else:
         return ""
 
+
 class FollowData(BaseModel):
     follower_count: int
     following_users_count: int
     dismissing_users_count: int
 
+
 class Identifier(BaseModel):
     identifier_type: str
     identifier_value: str
 
-    _default_str = field_validator(
-        "identifier_type",
-        "identifier_value",
-        mode="before"
-    )(default_str)
+    _default_str = field_validator("identifier_type", "identifier_value", mode="before")(default_str)
+
 
 class Marquee(BaseModel):
     artist_name: str
     segment: str
 
-    _default_str = field_validator(
-        "artist_name",
-        "segment",
-        mode="before"
-    )(default_str)
+    _default_str = field_validator("artist_name", "segment", mode="before")(default_str)
+
 
 class SearchQueries(BaseModel):
     platform: str
@@ -42,11 +38,8 @@ class SearchQueries(BaseModel):
     search_query: str
     search_interaction_URIs: list[str] | None
 
-    _default_str = field_validator(
-        "platform",
-        "search_query",
-        mode="before"
-    )(default_str)
+    _default_str = field_validator("platform", "search_query", mode="before")(default_str)
+
 
 class UserData(BaseModel):
     username: str | None
@@ -62,12 +55,8 @@ class UserData(BaseModel):
     mobile_brand: str | None
     creation_time: datetime
 
-    _default_str = field_validator(
-        "email",
-        "country",
-        "gender",
-        mode="before"
-    )(default_str)
+    _default_str = field_validator("email", "country", "gender", mode="before")(default_str)
+
 
 class Track(NamedTuple):
     artist: str
@@ -75,24 +64,28 @@ class Track(NamedTuple):
     track: str
     uri: str
 
+
 class Album(NamedTuple):
     artist: str
     album: str
     uri: str
 
+
 class Artist(NamedTuple):
     name: str
     uri: str
 
+
 class Library(BaseModel):
-    tracks : list[Track]
+    tracks: list[Track]
     albums: list[Album]
-    shows: list | None # unknown type my data is blank
-    episodes: list | None # unknown type my data is blank
-    banned_tracks: list[Track] | None #unknown type my data is blank
+    shows: list | None  # unknown type my data is blank
+    episodes: list | None  # unknown type my data is blank
+    banned_tracks: list[Track] | None  # unknown type my data is blank
     artists: list[Artist]
     banned_artists: list[Artist] | None
     other: list[str] | None
+
 
 class StreamingHistory(BaseModel):
     ts: datetime
@@ -125,5 +118,5 @@ class StreamingHistory(BaseModel):
         "user_agent_decrypted",
         "reason_start",
         "reason_end",
-        mode="before"
+        mode="before",
     )(default_str)
