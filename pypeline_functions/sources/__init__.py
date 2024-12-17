@@ -1,7 +1,9 @@
 from pypeline_functions.sources.google_takeout_seed import google_takeout_seed
+from pypeline_functions.sources.rss_feed import rss_feed
 from pypeline_functions.sources.spotify_seed import spotify_seed
 
 __all__ = [
     "google_takeout_seed",
+    "rss_feed",
     "spotify_seed",
 ]

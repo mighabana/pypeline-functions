@@ -6,6 +6,9 @@ from pypeline_functions.models.google_takeout import (
     PlaceVisit,
     Subtitles,
 )
+from pypeline_functions.models.rss_feed import (
+    CNNMetadata,
+)
 from pypeline_functions.models.spotify import (
     Album,
     Artist,
@@ -23,6 +26,7 @@ __all__ = [
     "Activity",
     "Album",
     "Artist",
+    "CNNMetadata",
     "CandidateLocation",
     "ChromeHistory",
     "Details",
@@ -32,7 +36,6 @@ __all__ = [
     "Marquee",
     "PlaceVisit",
     "SearchQueries",
-    "SpotifyModel",
     "StreamingHistory",
     "Subtitles",
     "Track",
