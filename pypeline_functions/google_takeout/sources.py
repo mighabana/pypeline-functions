@@ -4,9 +4,9 @@ from collections.abc import Iterable, Sequence
 import dlt
 from dlt.sources import DltResource
 
-from pypeline_functions.models.google_takeout import Activity, ChromeHistory, PlaceVisit
-from pypeline_functions.parsers.json_parser import GoogleTakeoutParser
-from pypeline_functions.utils.google_cloud_storage import GoogleCloudStorage
+from pypeline_functions.google_takeout.models import Activity, ChromeHistory, PlaceVisit
+from pypeline_functions.google_takeout.parsers import GoogleTakeoutParser
+from pypeline_functions.utils.storage import GoogleCloudStorage
 
 
 @dlt.source

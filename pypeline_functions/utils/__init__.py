@@ -1,4 +1,4 @@
-from pypeline_functions.utils.google_cloud_storage import GoogleCloudStorage
+from pypeline_functions.utils.storage import GoogleCloudStorage
 
 __all__ = [
     "GoogleCloudStorage",

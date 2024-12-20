@@ -16,19 +16,10 @@ try:
 except ImportError:
     __version__ = "unknown"
 
-from pypeline_functions import models, parsers, sources, utils
-from pypeline_functions.extract_google_takeout_seed import extract_google_takeout_seed
-from pypeline_functions.extract_spotify_seed import extract_spotify_seed
-from pypeline_functions.google_takeout_seed_to_bigquery import google_takeout_seed_to_bigquery
-from pypeline_functions.spotify_seed_to_bigquery import spotify_seed_to_bigquery
+from pypeline_functions import google_takeout, spotify, utils
 
 __all__ = [
-    "extract_google_takeout_seed",
-    "extract_spotify_seed",
-    "google_takeout_seed_to_bigquery",
-    "models",
-    "parsers",
-    "sources",
-    "spotify_seed_to_bigquery",
+    "google_takeout",
+    "spotify",
     "utils",
 ]

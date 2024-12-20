@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 
+import argparse
+
 import dlt
 
-from pypeline_functions.sources.spotify_seed import spotify_seed
+from pypeline_functions.spotify.sources import spotify_seed
 
 
 def spotify_seed_to_bigquery(bucket_name: str, dataset_name: str) -> None:
@@ -18,8 +20,6 @@ def spotify_seed_to_bigquery(bucket_name: str, dataset_name: str) -> None:
 
 
 def main() -> None:  # noqa: D103
-    import argparse
-
     parser = argparse.ArgumentParser(
         description="Transfers data from the Spotify data seed file on GCS to BigQuery using dlt"
     )

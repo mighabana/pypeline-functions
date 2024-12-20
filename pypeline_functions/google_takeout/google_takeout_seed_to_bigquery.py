@@ -1,8 +1,9 @@
 #!/usr/bin/env python
+import argparse
 
 import dlt
 
-from pypeline_functions.sources.google_takeout_seed import google_takeout_seed
+from pypeline_functions.google_takeout.sources import google_takeout_seed
 
 
 def google_takeout_seed_to_bigquery(bucket_name: str, dataset_name: str) -> None:
@@ -18,8 +19,6 @@ def google_takeout_seed_to_bigquery(bucket_name: str, dataset_name: str) -> None
 
 
 def main() -> None:  # noqa: D103
-    import argparse
-
     parser = argparse.ArgumentParser(
         description="Transfers data from the Google Takeout data seed file on GCS to BigQuery using dlt"
     )

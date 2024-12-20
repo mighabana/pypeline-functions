@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
-from pypeline_functions.utils.google_cloud_storage import GoogleCloudStorage
+import argparse
+
+from pypeline_functions.utils.storage import GoogleCloudStorage
 
 
 def extract_spotify_seed(landing_bucket_name: str, landing_prefix: str, data_type: str) -> None:
@@ -18,8 +20,6 @@ def extract_spotify_seed(landing_bucket_name: str, landing_prefix: str, data_typ
 
 
 def main() -> None:  # noqa: D103
-    import argparse
-
     parser = argparse.ArgumentParser(
         description="Extracts the spotify data seed (.zip) files and dumps them into another bucket \
             with all .json files converted to .jsonl"

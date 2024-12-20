@@ -4,7 +4,7 @@ from collections.abc import Iterable, Sequence
 import dlt
 from dlt.sources import DltResource
 
-from pypeline_functions.models.spotify import (
+from pypeline_functions.spotify.models import (
     FollowData,
     Identifier,
     Library,
@@ -13,8 +13,8 @@ from pypeline_functions.models.spotify import (
     StreamingHistory,
     UserData,
 )
-from pypeline_functions.parsers.json_parser import SpotifyParser
-from pypeline_functions.utils.google_cloud_storage import GoogleCloudStorage
+from pypeline_functions.spotify.parsers import SpotifyParser
+from pypeline_functions.utils.storage import GoogleCloudStorage
 
 
 @dlt.source

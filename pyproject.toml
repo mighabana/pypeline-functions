@@ -48,10 +48,10 @@ dev = [
 ]
 
 [project.scripts]
-extract_google_takeout_seed = "pypeline_functions.extract_google_takeout_seed:main"
-extract_spotify_seed = "pypeline_functions.spotify_seed:main"
-google_takeout_seed_to_bigquery = "pypeline_functions.google_takeout_seed_to_bigquery:main"
-spotify_seed_to_bigquery = "pypeline_functions.spotify_seed_to_bigquery:main"
+extract_google_takeout_seed = "pypeline_functions.google_takeout.extract_google_takeout_seed:main"
+extract_spotify_seed = "pypeline_functions.spotify.spotify_seed:main"
+google_takeout_seed_to_bigquery = "pypeline_functions.google_takeout.google_takeout_seed_to_bigquery:main"
+spotify_seed_to_bigquery = "pypeline_functions.spotify.spotify_seed_to_bigquery:main"
 
 [tool.hatch]
 # using hatch-vcs (https://github.com/ofek/hatch-vcs/tree/master) for single-source package versioning
@@ -141,8 +141,8 @@ lint.ignore = [
 lint.pydocstyle.convention = "numpy"
 
 [tool.ruff.lint.per-file-ignores]
-"pypeline_functions/models/*" = ["D101"]
-"pypeline_functions/sources/*" = ["PLR0915"]
+"**/models.py" = ["D101"]
+"**/sources.py" = ["PLR0915"]
 "**/__init__.py" = ["D104", "E402"]
 
 # Additional configurations should include unit testing and test coverage (see pytest and pytest-cov respectively)
