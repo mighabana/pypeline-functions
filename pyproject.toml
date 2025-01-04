@@ -25,7 +25,7 @@ dependencies = [
     "fastparquet>=2024.5.0",
     "pydantic>=2.9.0",
     "dlt>=1.0.0",
-    "streamunzip>=0.0.90",
+    "stream-unzip>=0.0.90",
     "python-magic>=0.4.27",
 ]
 
@@ -90,6 +90,7 @@ include = [
 
 [tool.ruff]
 line-length = 120
+lint.pylint.max-nested-blocks=10
 lint.extend-select = [
     "F",
     "E",

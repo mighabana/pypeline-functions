@@ -27,14 +27,10 @@ class GoogleTakeoutParser:
         """
         dct["title"] = dct.get("title", "")
         dct["page_transition"] = dct.get("page_transition", "")
-        if isinstance(dct.get("ptoken", {}), dict) and len(dct.get("ptoken", {}) == 0):
-            dct["ptoken"] = None
-        else:
-            # might be an unnecessary statement but leaving it in to be safe
-            dct["ptoken"] = dct.get("ptoken", None)
         # TODO: add HTTP sanitation by converting to HTTPS
         dct["url"] = dct.get("url", "")
         dct["time_usec"] = datetime.fromtimestamp(dct.get("time_usec", 0) / 10**6, UTC)
+        return dct
 
     def activity_parser(self, dct: dict) -> dict:
         """
@@ -101,27 +97,37 @@ class GoogleTakeoutParser:
             A dictionary representing a single entry of the Semantic Location History data.
         """
         output = {}
-        datetime_format = "%Y-%m-%dT%H:%M:%SZ"
+        datetime_formats = ["%Y-%m-%dT%H:%M:%S.%fZ", "%Y-%m-%dT%H:%M:%SZ"]
 
         place_visit = dct["placeVisit"]
         location = place_visit["location"]
         duration = place_visit["duration"]
-        output["lat"] = location.latitudeE7
-        output["lng"] = location.longitudeE7
-        output["place_id"] = location.placeId
-        output["location_confidence"] = location.locationConfidence
+        output["lat"] = location.get("latitudeE7", None)
+        output["lng"] = location.get("longitudeE7", None)
+        output["place_id"] = location.get("placeId", None)
+        output["location_confidence"] = location.get("locationConfidence", None)
         output["address"] = location.get("address", None)
         output["name"] = location.get("name", None)
         output["calibrated_probability"] = location.get("calibratedProbability", None)
-        output["device_tag"] = location.get("sourceInfo", {"deviceTag": None}).deviceTag
-        if duration.startTimestamp is None:
+        output["device_tag"] = location.get("sourceInfo", {"deviceTag": None}).get("deviceTag", None)
+        if duration.get("startTimestamp", None) is None:
             output["start_time"] = None
         else:
-            output["start_time"] = datetime.strptime(duration.startTimestamp, datetime_format)  # noqa: DTZ007
-        if duration.endTimestamp is None:
+            for datetime_format in datetime_formats:
+                try:
+                    output["start_time"] = datetime.strptime(duration.get("startTimestamp"), datetime_format)  # noqa: DTZ007
+                    break
+                except ValueError:
+                    pass
+        if duration.get("endTimestamp", None) is None:
             output["end_time"] = None
         else:
-            output["end_time"] = datetime.strptime(duration.endTimestamp, datetime_format)  # noqa: DTZ007
+            for datetime_format in datetime_formats:
+                try:
+                    output["end_time"] = datetime.strptime(duration.get("endTimestamp"), datetime_format)  # noqa: DTZ007
+                    break
+                except ValueError:
+                    pass
         output["center_lat"] = dct.get("centerLatE7", None)
         output["center_lng"] = dct.get("centerLngE7", None)
         output["place_confidence"] = dct.get("placeConfidence", None)

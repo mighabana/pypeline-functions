@@ -1,5 +1,3 @@
-from pypeline_functions.utils.storage import GoogleCloudStorage
+from pypeline_functions.utils.storage import GoogleCloudStorage, LocalStorage
 
-__all__ = [
-    "GoogleCloudStorage",
-]
+__all__ = ["GoogleCloudStorage", "LocalStorage"]

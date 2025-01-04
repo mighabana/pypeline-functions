@@ -3,7 +3,7 @@ import argparse
 
 import dlt
 
-from pypeline_functions.google_takeout.sources import google_takeout_seed
+from pypeline_functions.google_takeout.sources import google_takeout_seed_gcs
 
 
 def google_takeout_seed_to_bigquery(bucket_name: str, dataset_name: str) -> None:
@@ -12,7 +12,7 @@ def google_takeout_seed_to_bigquery(bucket_name: str, dataset_name: str) -> None
         pipeline_name="google_takeout_seed", dataset_name=dataset_name, destination="bigquery", dev_mode=True
     )
 
-    data = google_takeout_seed(bucket_name)
+    data = google_takeout_seed_gcs(bucket_name)
 
     info = pipeline.run(data)
     print(info)

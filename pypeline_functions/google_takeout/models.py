@@ -23,17 +23,17 @@ class CandidateLocation(BaseModel):
 
 
 class PlaceVisit(BaseModel):
-    lat: float
-    lng: float
+    lat: float | None
+    lng: float | None
     center_lat: float | None
     center_lng: float | None
     address: str | None
     name: str | None
-    location_confidence: float
+    location_confidence: float | None
     calibrated_probability: float | None
-    place_id: str
-    start_time: datetime
-    end_time: datetime
+    place_id: str | None
+    start_time: datetime | None
+    end_time: datetime | None
     device_tag: int | None
     candidate_locations: list[CandidateLocation]
     place_confidence: str | None
@@ -46,7 +46,6 @@ class PlaceVisit(BaseModel):
 class ChromeHistory(BaseModel):
     title: str
     page_transition: str
-    ptoken: dict | None
     url: str
     time_usec: datetime
 

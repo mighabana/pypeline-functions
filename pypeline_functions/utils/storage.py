@@ -4,11 +4,14 @@ This module provides:
 - TargetGoogleCloudStorage: class containing helper functions for authenticating, uploading and managing files in GCS.
 """
 
+import glob
 import json
 import logging
+import os
 import re
+import zipfile
 from collections.abc import Iterable, Iterator
-from datetime import datetime
+from datetime import UTC, datetime
 from io import BytesIO
 
 from google.api_core.exceptions import RequestRangeNotSatisfiable
@@ -206,7 +209,8 @@ class GoogleCloudStorage:
 
     # ----------------------------------- Misc. -----------------------------------
 
-    def _zipped_chunks(self, blob: Blob) -> Iterable[BytesIO]:
+    @staticmethod
+    def _zipped_chunks(blob: Blob) -> Iterable[BytesIO]:
         chunk_size = 536870912  # 500 MB
         start = 0
         while True:
@@ -246,10 +250,10 @@ class GoogleCloudStorage:
                 print(f"Processing file: {name}")
                 for chunk in unzipped_chunks:
                     if landing_prefix:
-                        blob_destination = f"{landing_prefix.removesuffix("/")}/{name}"
+                        blob_destination = f"{landing_prefix.removesuffix('/')}/{name}"
                         landing_blob = landing_bucket.blob(blob_destination)
                     else:
-                        blob_destination = f"{blob_path.removesuffix(".zip")}/{name}"
+                        blob_destination = f"{blob_path.removesuffix('.zip')}/{name}"
                         landing_blob = landing_bucket.blob(blob_destination)
                     landing_blob.upload_from_file(file_obj=BytesIO(chunk), size=file_size, content_type="text/plain")
 
@@ -333,3 +337,108 @@ class GoogleCloudStorage:
             if file_name in blob.name:
                 output.append(blob)
         return output
+
+
+class LocalStorage:
+    """A helper class for managing local files.
+
+    Methods
+    -------
+    extract_zip_files(file_path: str, destination_path: str) -> list[str]
+        Extracts a zip file and saves it in the given destination path.
+        Returns a list of file paths for each extracted file.
+    """
+
+    @staticmethod
+    def _extract_timestamp_from_filename(
+        file_path: str, datetime_format: str, delimeter: str, timestamp_index: int
+    ) -> datetime:
+        try:
+            timestamp_str = file_path.split("/")[-1].split(delimeter)[timestamp_index]
+            return datetime.strptime(timestamp_str, datetime_format).astimezone(UTC)
+        except ValueError:
+            return datetime.min.replace(tzinfo=UTC)
+
+    @staticmethod
+    def _get_files_with_prefix(folder_path: str, path_prefix: str) -> list[str]:
+        matching_files = []
+        pattern = re.compile(path_prefix)
+        for root, _, files in os.walk(folder_path):
+            for file in files:
+                full_path = os.path.join(root, file)
+                if pattern.search(full_path):
+                    matching_files.append(full_path)
+
+        return matching_files
+
+    def get_latest_seed(
+        self,
+        base_dir: str,
+        seed_prefix: str,
+        file_filter: str = ".*",
+        datetime_format: str = "%Y%m%dT%H%M%SZ",
+        delimeter: str = "-",
+        timestamp_index: int = 1,
+    ) -> [str]:
+        """"""
+        folder_pattern = os.path.join(base_dir, seed_prefix)
+        folders = glob.glob(folder_pattern)
+
+        if not folders:
+            print(f"No folders matching pattern ({seed_prefix}) found in {base_dir}.")
+            return ""
+
+        latest_folder = ""
+        max_timestamp = datetime.min.replace(tzinfo=UTC)
+        for folder in folders:
+            cur = self._extract_timestamp_from_filename(folder, datetime_format, delimeter, timestamp_index)
+            if cur > max_timestamp:
+                max_timestamp = cur
+                latest_folder = folder
+                print(latest_folder)
+
+        matched_files = self._get_files_with_prefix(latest_folder, file_filter)
+        print(f"Matched files: {matched_files}")
+        return matched_files
+
+    @staticmethod
+    def extract_zip_files(file_path: str, destination_path: str) -> list[str]:
+        """Extact the .zip file at the provided file path into the given destination path.
+        """ """
+
+        Parameters
+        ----------
+        file_path : str
+            The file path to the .zip file
+        destionation_path : str
+            The location where the extracted files will be saved.
+        """
+        if not os.path.exists(destination_path):
+            os.makedirs(destination_path)
+
+        extracted_files = []  # List to store paths of extracted files
+
+        with zipfile.ZipFile(file_path, "r") as zip_ref:
+            # Extract files one by one to save memory
+            for file_name in zip_ref.namelist():
+                file_path_full = os.path.join(destination_path, file_name)
+
+                # If it's a directory, create it
+                if file_name.endswith("/"):
+                    os.makedirs(file_path_full, exist_ok=True)
+                else:
+                    # Extract each file one by one to save memory
+                    with open(file_path_full, "wb") as f:
+                        chunk_size = 536870912  # 500 MB
+                        with zip_ref.open(file_name) as zip_file:
+                            while True:
+                                chunk = zip_file.read(chunk_size)
+                                if not chunk:
+                                    break
+                                f.write(chunk)
+
+                    # Add the full path of the extracted file to the list
+                    extracted_files.append(file_path_full)
+
+            print(f"Extraction complete to {destination_path}")
+            return extracted_files
