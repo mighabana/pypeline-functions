@@ -27,6 +27,8 @@ dependencies = [
     "dlt>=1.0.0",
     "stream-unzip>=0.0.90",
     "python-magic>=0.4.27",
+    "feedparser>=6.0.11",
+    "psycopg2-binary>=2.9.10",
 ]
 
 # list of possible classifiers: https://pypi.org/classifiers/
