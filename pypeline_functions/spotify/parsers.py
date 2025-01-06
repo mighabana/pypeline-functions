@@ -237,7 +237,7 @@ class SpotifyParser:
         output["shuffle"] = dct.get("shuffle", None)
         output["skipped"] = dct.get("skipped", None)
         output["offline"] = dct.get("offline", None)
-        if dct["offline_timestamp"] == 0 | dct["offline_timestamp"] is None:
+        if (dct["offline_timestamp"] == 0) | (dct["offline_timestamp"] is None):
             output["offline_timestamp"] = None
         else:
             output["offline_timestamp"] = datetime.fromtimestamp(dct.get("offline_timestamp", 0) / 10**6, UTC)

@@ -1,4 +1,4 @@
-from pypeline_functions.spotify.extract_spotify_seed import extract_spotify_seed
+from pypeline_functions.spotify.extract_spotify_seed import main
 from pypeline_functions.spotify.models import (
     Album,
     Artist,
@@ -12,7 +12,7 @@ from pypeline_functions.spotify.models import (
     UserData,
 )
 from pypeline_functions.spotify.parsers import SpotifyParser
-from pypeline_functions.spotify.sources import spotify_seed
+from pypeline_functions.spotify.sources import spotify_seed_gcs, spotify_seed_local
 from pypeline_functions.spotify.spotify_seed_to_bigquery import spotify_seed_to_bigquery
 
 __all__ = [
@@ -27,7 +27,8 @@ __all__ = [
     "StreamingHistory",
     "Track",
     "UserData",
-    "extract_spotify_seed",
-    "spotify_seed",
+    "main",
+    "spotify_seed_gcs",
+    "spotify_seed_local",
     "spotify_seed_to_bigquery",
 ]

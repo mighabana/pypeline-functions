@@ -2,18 +2,18 @@
 
 import argparse
 
-import dlt
+from dlt import pipeline as dlt_pipeline
 
-from pypeline_functions.spotify.sources import spotify_seed
+from pypeline_functions.spotify.sources import spotify_seed_gcs
 
 
 def spotify_seed_to_bigquery(bucket_name: str, dataset_name: str) -> None:
     """Run the Spotify data seed to BigQuery pipeline."""
-    pipeline = dlt.pipeline(
+    pipeline = dlt_pipeline(
         pipeline_name="spotify_seed", dataset_name=dataset_name, destination="bigquery", dev_mode=True
     )
 
-    data = spotify_seed(bucket_name)
+    data = spotify_seed_gcs(bucket_name)
 
     info = pipeline.run(data)
     print(info)

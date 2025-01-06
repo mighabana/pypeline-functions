@@ -2,7 +2,6 @@
 import argparse
 
 from dlt import pipeline as dlt_pipeline
-from dlt.destinations import postgres
 
 from pypeline_functions.google_takeout.sources import google_takeout_seed_local
 
@@ -23,7 +22,7 @@ def google_takeout_seed_to_postgres(seed_path: str, dataset_name: str) -> None:
 
 def main() -> None:  # noqa: D103
     parser = argparse.ArgumentParser(
-        description="Transfers data from the Google Takeout data seed file on GCS to BigQuery using dlt"
+        description="Transfers data from the Google Takeout data seed file on GCS to Postgres using dlt"
     )
     parser.add_argument("--seed_path", type=str, required=True, help="file path where the data seed is stored")
     parser.add_argument(

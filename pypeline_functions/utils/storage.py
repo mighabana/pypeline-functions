@@ -350,14 +350,16 @@ class LocalStorage:
     """
 
     @staticmethod
-    def _extract_timestamp_from_filename(
-        file_path: str, datetime_format: str, delimeter: str, timestamp_index: int
-    ) -> datetime:
-        try:
-            timestamp_str = file_path.split("/")[-1].split(delimeter)[timestamp_index]
-            return datetime.strptime(timestamp_str, datetime_format).astimezone(UTC)
-        except ValueError:
-            return datetime.min.replace(tzinfo=UTC)
+    def _extract_timestamp_from_filename(file_path: str, datetime_format: str, delimeter: str) -> datetime:
+        file_metadata = file_path.split("/")[-1].split(delimeter)
+        for metadata in file_metadata:
+            print(metadata)
+            try:
+                return datetime.strptime(metadata, datetime_format).astimezone(UTC)
+            except ValueError:
+                continue
+
+        return datetime.min.replace(tzinfo=UTC)
 
     @staticmethod
     def _get_files_with_prefix(folder_path: str, path_prefix: str) -> list[str]:
@@ -378,7 +380,6 @@ class LocalStorage:
         file_filter: str = ".*",
         datetime_format: str = "%Y%m%dT%H%M%SZ",
         delimeter: str = "-",
-        timestamp_index: int = 1,
     ) -> [str]:
         """"""
         folder_pattern = os.path.join(base_dir, seed_prefix)
@@ -391,7 +392,7 @@ class LocalStorage:
         latest_folder = ""
         max_timestamp = datetime.min.replace(tzinfo=UTC)
         for folder in folders:
-            cur = self._extract_timestamp_from_filename(folder, datetime_format, delimeter, timestamp_index)
+            cur = self._extract_timestamp_from_filename(folder, datetime_format, delimeter)
             if cur > max_timestamp:
                 max_timestamp = cur
                 latest_folder = folder
@@ -427,6 +428,8 @@ class LocalStorage:
                 if file_name.endswith("/"):
                     os.makedirs(file_path_full, exist_ok=True)
                 else:
+                    os.makedirs(os.path.dirname(file_path_full), exist_ok=True)
+
                     # Extract each file one by one to save memory
                     with open(file_path_full, "wb") as f:
                         chunk_size = 536870912  # 500 MB
