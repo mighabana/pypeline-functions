@@ -51,9 +51,12 @@ dev = [
 
 [project.scripts]
 extract_google_takeout_seed = "pypeline_functions.google_takeout.extract_google_takeout_seed:main"
-extract_spotify_seed = "pypeline_functions.spotify.spotify_seed:main"
+extract_spotify_seed = "pypeline_functions.spotify.extract_spotify_seed:main"
 google_takeout_seed_to_bigquery = "pypeline_functions.google_takeout.google_takeout_seed_to_bigquery:main"
+google_takeout_seed_to_postgres = "pypeline_functions.google_takeout.google_takeout_seed_to_postgres:main"
 spotify_seed_to_bigquery = "pypeline_functions.spotify.spotify_seed_to_bigquery:main"
+spotify_seed_to_postgres = "pypeline_functions.spotify.spotify_seed_to_postgres:main"
+rss_feed_to_postgres = "pypeline_functions.rss.rss_feed_to_postgres:main"
 
 [tool.hatch]
 # using hatch-vcs (https://github.com/ofek/hatch-vcs/tree/master) for single-source package versioning
