@@ -243,6 +243,8 @@ class GoogleCloudStorage:
 
         # NOTE: we can't use batching because the payload must be less than 10MB (https://cloud.google.com/storage/docs/batch#overview)
         for blob_path in blob_paths:
+            if ".zip" not in blob_path:
+                continue
             blob = bucket.blob(blob_path)
 
             for file_name, file_size, unzipped_chunks in stream_unzip(self._zipped_chunks(blob), chunk_size=536870912):
