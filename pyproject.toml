@@ -66,7 +66,7 @@ version.template = "{tag}"
 [tool.hatch.build]
 hooks.vcs.version-file = "_version.py"
 include = [
-    "/pypeline_functions",
+    "/src",
     "README.md"
 ]
 exclude = [
@@ -90,7 +90,7 @@ exclude = [
 
 [tool.hatch.build.targets.wheel]
 include = [
-    "/pypeline_functions",
+    "/src",
 ]
 
 [tool.ruff]

@@ -6,7 +6,7 @@ from dlt.sources.credentials import ConnectionStringCredentials
 from dlt.sources.sql_database import sql_database
 
 
-def ctu_relational_to_postgres() -> None:
+def ctu_relational_to_warehouse(destination: str) -> None:
     """Run the CTU Relational database to Postgres pipeline."""
     databases = ["financial", "imdb_full", "NBA"]
 
@@ -14,7 +14,7 @@ def ctu_relational_to_postgres() -> None:
         pipeline = dlt_pipeline(
             pipeline_name=f"ctu_relational_{db}_postgres",
             dataset_name=db,
-            destination="postgres",
+            destination=destination,
         )
 
         credentials = ConnectionStringCredentials(
@@ -27,7 +27,15 @@ def ctu_relational_to_postgres() -> None:
 
 
 def main() -> None:  # noqa: D103
-    ctu_relational_to_postgres()
+    parser = argparse.ArgumentParser(
+        description="Transfers data from the CTU relational database to the Data Warehouse"
+    )
+    parser.add_argument(
+        "--destination", type=str, required=True, choices=["postgres", "bigquery"], help="where the data will be saved"
+    )
+
+    args = parser.parse_args()
+    ctu_relational_to_warehouse(args.destination)
 
 
 if __name__ == "__main__":

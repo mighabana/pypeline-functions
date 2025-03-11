@@ -1,12 +1,10 @@
 from collections.abc import Iterable, Sequence
 from datetime import UTC, datetime
-from operator import itemgetter
 from time import mktime
 
 import dlt
 from dlt.sources import DltResource
 from feedparser import parse
-
 from pypeline_functions.rss.models import RSSFeed
 
 
