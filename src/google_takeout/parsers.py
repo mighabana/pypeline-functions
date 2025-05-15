@@ -16,7 +16,8 @@ class GoogleTakeoutParser:
         Parse and format a single entry of the Semantic Location History data.
     """
 
-    def chrome_history_parser(self, dct: dict) -> dict:
+    @staticmethod
+    def chrome_history_parser(dct: dict) -> dict:
         """
         Parse and format a single entry of the Google Chrome History data.
 
@@ -32,7 +33,8 @@ class GoogleTakeoutParser:
         dct["time_usec"] = datetime.fromtimestamp(dct.get("time_usec", 0) / 10**6, UTC)
         return dct
 
-    def activity_parser(self, dct: dict) -> dict:
+    @staticmethod
+    def activity_parser(dct: dict) -> dict:
         """
         Parse and format a single entry of the Google Activity data.
 
@@ -66,7 +68,8 @@ class GoogleTakeoutParser:
         dct["activityControls"] = dct.get("activityControls")
         return dct
 
-    def _candidate_location_parser(self, dct: dict) -> dict:
+    @staticmethod
+    def _candidate_location_parser(dct: dict) -> dict:
         """
         Parse and format a single entry of the candidate locations from the Semantic Location History data.
 
