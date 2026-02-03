@@ -1,7 +1,8 @@
-FROM python:3.12-slim
+FROM python:3.13-slim
 
-WORKDIR /home/user/
+WORKDIR /pipelines/
 
-COPY . /home/user/
+COPY . /pipelines/
 
-RUN  python3 -m pip install -r requirements.txt
+RUN python3 -m pip install -e .
+

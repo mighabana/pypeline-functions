@@ -1,34 +1,39 @@
 [build-system]
-requires = ["hatchling", "hatch-vcs"]
+requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "pypeline-functions"
-dynamic = ["version"]
-description = "A compiliation of data pipeline scripts in Python"
+name = "infolio"
+version = "0.1.0"
+description = "A data pipeline framework for collecting publicly available information."
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">= 3.11"
 keywords = [
     "data pipelines",
     "ELT",
-    "dlt",
-    "pypeline",
+    "ETL",
+    "info",
+    "folio",
 ]
 authors = [{name = "Miguel Habana", email = "mighabana@gmail.com"}]
 dependencies = [
-    "pandas>=2.2.0",
-    "google-auth>=2.34.0",
-    "google-cloud-bigquery>=3.25.0",
-    "google-cloud-bigquery-storage>=2.26.0",
-    "google-cloud-storage>=2.18.0",
-    "fastparquet>=2024.5.0",
-    "pydantic>=2.9.0",
-    "dlt>=1.0.0",
-    "stream-unzip>=0.0.90",
-    "python-magic>=0.4.27",
-    "feedparser>=6.0.11",
-    "psycopg2-binary>=2.9.10",
+    "pandas>=2.3.0",
+    "pyarrow>=23.0.0",
+    "requests>=2.32.0",
+    "tenacity>=9.1.0",
+    "polars>=1.32.0",
+    "colorama>=0.4.6",
+    "python-json-logger>=4.0.0",
+    "boto3>=1.42.40",
+    "pyarrow>=21.0.0",
+    "openpyxl>=3.1.0",
+    "google-auth>=2.48.0",
+    "google-api-python-client>=2.188.0",
+    "gspread>=6.2.1",
+    "gspread-dataframe>=4.0.0",
+    "gspread-formatting>=1.2.1",
+    "clickhouse-connect>=0.10.0",
 ]
 
 # list of possible classifiers: https://pypi.org/classifiers/
@@ -47,24 +52,13 @@ dev = [
     "ruff",
     "pre-commit",
     "memray",
+    "pytest",
+    "pytest-cov",
+    "mypy"
 ]
 
-[project.scripts]
-extract_google_takeout_seed = "pypeline_functions.google_takeout.extract_google_takeout_seed:main"
-extract_spotify_seed = "pypeline_functions.spotify.extract_spotify_seed:main"
-google_takeout_seed_to_bigquery = "pypeline_functions.google_takeout.google_takeout_seed_to_bigquery:main"
-google_takeout_seed_to_postgres = "pypeline_functions.google_takeout.google_takeout_seed_to_postgres:main"
-spotify_seed_to_bigquery = "pypeline_functions.spotify.spotify_seed_to_bigquery:main"
-spotify_seed_to_postgres = "pypeline_functions.spotify.spotify_seed_to_postgres:main"
-rss_feed_to_postgres = "pypeline_functions.rss.rss_feed_to_postgres:main"
-
-[tool.hatch]
-# using hatch-vcs (https://github.com/ofek/hatch-vcs/tree/master) for single-source package versioning
-version.source = "vcs"
-version.template = "{tag}"
-
 [tool.hatch.build]
-hooks.vcs.version-file = "_version.py"
+sources = ["src"]
 include = [
     "/src",
     "README.md"
@@ -78,7 +72,7 @@ exclude = [
     "build/",
     "tests/",
     ".git/",
-    "venv/",
+    ".venv/",
 ]
 
 [tool.hatch.build.targets.sdist]
@@ -147,8 +141,6 @@ lint.ignore = [
 lint.pydocstyle.convention = "numpy"
 
 [tool.ruff.lint.per-file-ignores]
-"**/models.py" = ["D101"]
-"**/sources.py" = ["PLR0915"]
 "**/__init__.py" = ["D104", "E402"]
 
 # Additional configurations should include unit testing and test coverage (see pytest and pytest-cov respectively)
