@@ -209,7 +209,7 @@ class CurrencyBeacon:
         rates = response_data.get("rates", {})
 
         # Parse date
-        parsed_date = datetime.strptime(response_date, "%Y-%m-%d").date()
+        parsed_date = datetime.strptime(response_date, "%Y-%m-%d").astimezone(UTC).date()
 
         # Historical rates don't have a specific timestamp, so we use noon UTC on the date
         rate_timestamp = datetime.combine(parsed_date, datetime.min.time()).replace(tzinfo=UTC)
@@ -269,9 +269,9 @@ class CurrencyBeacon:
         """
         # Convert dates to date objects
         if isinstance(start_date, str):
-            start_date = datetime.strptime(start_date, "%Y-%m-%d").date()
+            start_date = datetime.strptime(start_date, "%Y-%m-%d").astimezone(UTC).date()
         if isinstance(end_date, str):
-            end_date = datetime.strptime(end_date, "%Y-%m-%d").date()
+            end_date = datetime.strptime(end_date, "%Y-%m-%d").astimezone(UTC).date()
 
         total_days = (end_date - start_date).days + 1
         logger.info(

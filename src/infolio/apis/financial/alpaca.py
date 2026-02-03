@@ -217,7 +217,7 @@ class Alpaca:
             start_str = start_date
 
         if end_date is None:
-            end_str = date.today().isoformat()
+            end_str = date.now(tz=UTC).isoformat()
         elif isinstance(end_date, date):
             end_str = end_date.isoformat()
         else:
@@ -330,9 +330,9 @@ class Alpaca:
         """
         # Convert dates
         if isinstance(start_date, str):
-            start_date = datetime.strptime(start_date, "%Y-%m-%d").date()
+            start_date = datetime.strptime(start_date, "%Y-%m-%d").astimezone(UTC).date()
         if isinstance(end_date, str):
-            end_date = datetime.strptime(end_date, "%Y-%m-%d").date()
+            end_date = datetime.strptime(end_date, "%Y-%m-%d").astimezone(UTC).date()
 
         total_days = (end_date - start_date).days + 1
         logger.info(

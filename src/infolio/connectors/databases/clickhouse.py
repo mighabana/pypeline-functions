@@ -22,15 +22,15 @@ class Clickhouse:
     """
 
     def __init__(self, host:str|None=None, port:int|None=None, username:str|None=None, password:str|None=None) -> None:
-        
+
         client_kwargs = {
             "host": host or os.getenv("CONNECTOR__CLICKHOUSE__HOST"),
             "port": port or os.getenv("CONNECTOR__CLICKHOUSE__HTTP_PORT"),
             "username": username or os.getenv("CONNECTOR__CLICKHOUSE__USERNAME"),
             "password": password or os.getenv("CONNECTOR__CLICKHOUSE__PASSWORD"),
         }
-        
-        
+
+
         self.client = clickhouse_connect.get_client(**client_kwargs)
 
     def query(self, query:str) -> pl.DataFrame:
@@ -48,3 +48,4 @@ class Clickhouse:
             The query output as a Polars DataFrame.
         """
         return pl.from_arrow(self.client.query_arrow(query))
+
