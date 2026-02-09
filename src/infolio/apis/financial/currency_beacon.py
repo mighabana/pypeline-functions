@@ -65,7 +65,7 @@ class CurrencyBeacon:
         """
         auth_handler = ApiKeyAuthHandler(
             key_name="Authorization",
-            api_key=f"Bearer {api_key}" or f"Bearer {os.getenv('API__CURRENCY_BEACON__API_KEY')}",
+            api_key=f"Bearer {api_key or os.getenv('API__CURRENCY_BEACON__API_KEY')}",
         )
 
         self.api_client = ApiClient(
@@ -78,7 +78,7 @@ class CurrencyBeacon:
         self.api_client.reauthenticate()
 
     def get_latest_rates(
-        self, base: str = "USD", symbols: list[str] | None = None
+        self, base_currencies: list[str]=["USD"], symbols: list[str] | None = None
     ) -> pl.DataFrame:
         """
         Retrieve the latest exchange rates.
@@ -106,49 +106,50 @@ class CurrencyBeacon:
             If the API request fails.
         """
         endpoint = "latest"
-        params = {"base": base}
+        for base in base_currencies:
+            params = {"base": base}
 
-        if symbols:
-            params["symbols"] = ",".join(symbols)
+            if symbols:
+                params["symbols"] = ",".join(symbols)
 
-        logger.info(f"📊 Fetching latest rates for base={base}, symbols={symbols or 'ALL'}")
+            logger.info(f"📊 Fetching latest rates for base={base}, symbols={symbols or 'ALL'}")
 
-        response = self.api_client.get(endpoint, params=params)
-        data = response.json()
+            response = self.api_client.get(endpoint, params=params)
+            data = response.json()
 
-        # Extract response metadata
-        response_meta = data.get("meta", {})
-        api_timestamp = response_meta.get("last_updated_at")
+            # Extract response metadata
+            response_meta = data.get("meta", {})
+            api_timestamp = response_meta.get("last_updated_at")
 
-        # Parse timestamp
-        if api_timestamp:
-            timestamp = datetime.fromisoformat(api_timestamp.replace("Z", "+00:00"))
-        else:
-            timestamp = datetime.now(tz=UTC)
+            # Parse timestamp
+            if api_timestamp:
+                timestamp = datetime.fromisoformat(api_timestamp.replace("Z", "+00:00"))
+            else:
+                timestamp = datetime.now(tz=UTC)
 
-        # Extract rates
-        response_data = data.get("response", {})
-        base_currency = response_data.get("base")
-        rates = response_data.get("rates", {})
+            # Extract rates
+            response_data = data.get("response", {})
+            base_currency = response_data.get("base")
+            rates = response_data.get("rates", {})
 
-        # Build DataFrame
-        records = []
-        for target_currency, rate in rates.items():
-            records.append(
-                {
-                    "base_currency": base_currency,
-                    "target_currency": target_currency,
-                    "rate": float(rate),
-                    "rate_date": timestamp.date(),
-                    "rate_timestamp": timestamp,
-                    "ingestion_datetime": datetime.now(tz=UTC),
-                }
-            )
+            # Build DataFrame
+            records = []
+            for target_currency, rate in rates.items():
+                records.append(
+                    {
+                        "base_currency": base_currency,
+                        "target_currency": target_currency,
+                        "rate": float(rate),
+                        "rate_date": timestamp.date(),
+                        "rate_timestamp": timestamp,
+                        "ingestion_datetime": datetime.now(tz=UTC),
+                    }
+                )
 
-        df = pl.DataFrame(records)
-        logger.info(f"✅ Retrieved {len(records)} exchange rates")
+            df = pl.DataFrame(records)
+            logger.info(f"✅ Retrieved {len(records)} exchange rates")
 
-        return enforce_schema(df, SCHEMAS["EXCHANGE_RATES"])
+            yield enforce_schema(df, SCHEMAS["EXCHANGE_RATES"])
 
     def get_historical_rates(
         self, date: str | date, base: str = "USD", symbols: list[str] | None = None

@@ -31,6 +31,7 @@ class S3:
 
     def __init__(
         self,
+        endpoint_url: str | None = None,
         aws_access_key_id: str | None = None,
         aws_secret_access_key: str | None = None,
         aws_session_token: str | None = None,
@@ -38,6 +39,7 @@ class S3:
     ) -> None:
         self.client = boto3.client(
             "s3",
+            endpoint_url=endpoint_url or os.getenv("CONNECTOR__S3__ENDPOINT_URL", None),
             aws_access_key_id=aws_access_key_id or os.getenv("CONNECTOR__S3__ACCESS_KEY_ID", None),
             aws_secret_access_key=aws_secret_access_key or os.getenv("CONNECTOR__S3__SECRET_ACCESS_KEY", None),
             aws_session_token=aws_session_token or os.getenv("CONNECTOR__S3__SESSION_TOKEN", None),
