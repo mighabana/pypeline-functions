@@ -250,16 +250,16 @@ class YahooFinance:
 
         for batch_num, batch in enumerate(self._chunk_list(tickers, batch_size), 1):
             logger.info(f"  Processing batch {batch_num}/{total_batches} ({len(batch)} tickers)")
-            
+
             prices, financials, sentiment = self._fetch_batch_all_info(batch, use_threads)
-            
+
             logger.info(
                 f"  ✅ Batch {batch_num} complete: "
                 f"{prices.height} prices, "
                 f"{financials.height} financials, "
                 f"{sentiment.height} sentiment"
             )
-            
+
             yield (prices, financials, sentiment)
 
         logger.info(f"✅ Completed all {total_batches} batches")
@@ -294,9 +294,9 @@ class YahooFinance:
                     try:
                         result = future.result()
                         if result:
-                            price_records.append(result['price'])
-                            financial_records.append(result['financial'])
-                            sentiment_records.append(result['sentiment'])
+                            price_records.append(result["price"])
+                            financial_records.append(result["financial"])
+                            sentiment_records.append(result["sentiment"])
                     except Exception as e:
                         logger.warning(f"  Failed {ticker}: {e}")
                         failed_tickers.append(ticker)
@@ -305,9 +305,9 @@ class YahooFinance:
                 try:
                     result = self._fetch_single_all_info(ticker)
                     if result:
-                        price_records.append(result['price'])
-                        financial_records.append(result['financial'])
-                        sentiment_records.append(result['sentiment'])
+                        price_records.append(result["price"])
+                        financial_records.append(result["financial"])
+                        sentiment_records.append(result["sentiment"])
                 except Exception as e:
                     logger.warning(f"  Failed {ticker}: {e}")
                     failed_tickers.append(ticker)
@@ -319,9 +319,9 @@ class YahooFinance:
                 try:
                     result = self._fetch_single_all_info(ticker)
                     if result:
-                        price_records.append(result['price'])
-                        financial_records.append(result['financial'])
-                        sentiment_records.append(result['sentiment'])
+                        price_records.append(result["price"])
+                        financial_records.append(result["financial"])
+                        sentiment_records.append(result["sentiment"])
                 except Exception as e:
                     logger.error(f"  ❌ Retry failed for {ticker}: {e}")
 
@@ -338,7 +338,7 @@ class YahooFinance:
             pl.DataFrame(sentiment_records) if sentiment_records else pl.DataFrame(),
             SCHEMAS["MARKET_SENTIMENT_TIMESERIES"]
         )
-        
+
         return prices_df, financials_df, sentiment_df
 
     def _fetch_single_all_info(self, ticker_symbol: str, retry_count: int = 0, max_retries: int = 3) -> dict | None:
@@ -361,7 +361,7 @@ class YahooFinance:
             or None if fetch failed.
         """
         import time
-        
+
         try:
             ticker = yf.Ticker(ticker_symbol)
             info = ticker.info
@@ -492,44 +492,66 @@ class YahooFinance:
             }
 
             return {
-                'price': price_record,
-                'financial': financial_record,
-                'sentiment': sentiment_record,
+                "price": price_record,
+                "financial": financial_record,
+                "sentiment": sentiment_record,
             }
 
         except Exception as e:
             error_msg = str(e).lower()
-            
+
             # Check if it's a rate limit error
             is_rate_limit = any(phrase in error_msg for phrase in [
-                'too many requests',
-                '429',
-                'rate limit',
-                'quota exceeded',
-                'throttle',
+                "too many requests",
+                "429",
+                "rate limit",
+                "quota exceeded",
+                "throttle",
             ])
-            
+
+            # Check if it's a timeout error
+            is_timeout = any(phrase in error_msg for phrase in [
+                "timeout",
+                "timed out",
+                "connection timed out",
+                "read timeout",
+            ])
+
             if is_rate_limit and retry_count < max_retries:
                 # Exponential backoff: 2^retry_count * base_delay
-                # Retry 1: 15 seconds, Retry 2: 30 seconds, Retry 3: 45 seconds
-                base_delay = 15
+                # Retry 1: 30 seconds, Retry 2: 60 seconds, Retry 3: 120 seconds
+                base_delay = 30
                 wait_time = base_delay * (2 ** retry_count)
-                
+
                 logger.warning(
                     f"⏱️  Rate limit hit for {ticker_symbol}. "
                     f"Waiting {wait_time}s before retry {retry_count + 1}/{max_retries}"
                 )
                 time.sleep(wait_time)
-                
+
                 # Recursive retry
                 return self._fetch_single_all_info(ticker_symbol, retry_count + 1, max_retries)
-            
+
+            # Retry on timeouts with shorter wait
+            if is_timeout and retry_count < max_retries:
+                wait_time = 5 * (retry_count + 1)  # 5s, 10s, 15s
+                logger.warning(
+                    f"⏱️  Timeout for {ticker_symbol}. "
+                    f"Waiting {wait_time}s before retry {retry_count + 1}/{max_retries}"
+                )
+                time.sleep(wait_time)
+
+                # Recursive retry
+                return self._fetch_single_all_info(ticker_symbol, retry_count + 1, max_retries)
+
             # Log the error
             if is_rate_limit:
                 logger.error(f"❌ Rate limit exceeded for {ticker_symbol} after {max_retries} retries")
+            elif is_timeout:
+                logger.error(f"❌ Connection timeout for {ticker_symbol} after {max_retries} retries")
             else:
                 logger.error(f"❌ Failed to fetch all info for {ticker_symbol}: {e}")
-            
+
             return None
 
     def get_company_static(
