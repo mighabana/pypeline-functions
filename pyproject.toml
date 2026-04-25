@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "infolio"
-version = "0.1.0"
+version = "0.1.1"
 description = "A data pipeline framework for collecting publicly available information."
 readme = "README.md"
 license = { text = "MIT" }

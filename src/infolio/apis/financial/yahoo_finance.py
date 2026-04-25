@@ -251,29 +251,31 @@ class YahooFinance:
         for batch_num, batch in enumerate(self._chunk_list(tickers, batch_size), 1):
             logger.info(f"  Processing batch {batch_num}/{total_batches} ({len(batch)} tickers)")
 
-            prices, financials, sentiment = self._fetch_batch_all_info(batch, use_threads)
+            prices, financials, sentiment, failed = self._fetch_batch_all_info(batch, use_threads)
 
             logger.info(
                 f"  ✅ Batch {batch_num} complete: "
                 f"{prices.height} prices, "
                 f"{financials.height} financials, "
-                f"{sentiment.height} sentiment"
+                f"{sentiment.height} sentiment,"
+                f"{len(failed)} failed"
             )
 
-            yield (prices, financials, sentiment)
+            yield (prices, financials, sentiment, failed)
 
         logger.info(f"✅ Completed all {total_batches} batches")
 
     def _fetch_batch_all_info(
         self, tickers: list[str], use_threads: bool
-    ) -> tuple[pl.DataFrame, pl.DataFrame, pl.DataFrame]:
+    ) -> tuple[pl.DataFrame, pl.DataFrame, pl.DataFrame, list]:
         """
         Fetch all info for a batch of tickers from single .info call per ticker.
 
         Returns
         -------
-        tuple[pl.DataFrame, pl.DataFrame, pl.DataFrame]
-            Tuple of (price_snapshots, financials_timeseries, market_sentiment_timeseries) DataFrames.
+        tuple[pl.DataFrame, pl.DataFrame, pl.DataFrame, list]
+            Tuple of (price_snapshots, financials_timeseries, market_sentiment_timeseries)
+            DataFrames a list of failed stock tickers.
         """
         price_records = []
         financial_records = []
@@ -339,7 +341,11 @@ class YahooFinance:
             SCHEMAS["MARKET_SENTIMENT_TIMESERIES"]
         )
 
-        return prices_df, financials_df, sentiment_df
+        failed_ticker_list = sorted(
+            set(tickers) - {r["ticker"] for r in price_records}
+        )
+
+        return prices_df, financials_df, sentiment_df, failed_ticker_list
 
     def _fetch_single_all_info(self, ticker_symbol: str, retry_count: int = 0, max_retries: int = 3) -> dict | None:
         """
@@ -361,10 +367,15 @@ class YahooFinance:
             or None if fetch failed.
         """
         import time
+        time.sleep(0.1)
 
         try:
             ticker = yf.Ticker(ticker_symbol)
             info = ticker.info
+
+            if not info.get("regularMarketPrice") and not info.get("currentPrice"):
+                logger.warning(f"  ⚠️ No valid data for {ticker_symbol} — possibly delisted or invalid")
+                return None
 
             # Try fast_info for price data
             try:
@@ -534,7 +545,7 @@ class YahooFinance:
 
             # Retry on timeouts with shorter wait
             if is_timeout and retry_count < max_retries:
-                wait_time = 5 * (retry_count + 1)  # 5s, 10s, 15s
+                wait_time = 10 * (retry_count + 1)  # 10s, 20s, 30s
                 logger.warning(
                     f"⏱️  Timeout for {ticker_symbol}. "
                     f"Waiting {wait_time}s before retry {retry_count + 1}/{max_retries}"
