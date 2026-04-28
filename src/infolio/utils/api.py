@@ -55,6 +55,8 @@ class ApiClient:
         Base URL of the API.
     headers : dict of str, str, optional
         Default headers to include with every request.
+    params : dict of str, str, optional
+        Default parameters to include with every request.
     timeout : int, default=5
         Timeout for requests in seconds.
     max_retries : int, default=5
@@ -75,12 +77,14 @@ class ApiClient:
         self,
         base_url: str,
         headers: dict[str, str] | None = None,
+        params: dict[str, str] | None = None,
         timeout: int = 5,
         max_retries: int = 5,
         auth_handler: AuthHandler | None = None,
     ) -> None:
         self.base_url = base_url.rstrip("/")
         self.default_headers = headers or {}
+        self.default_params = params or {}
         self.timeout = timeout
         self.max_retries = max_retries
         self.auth_handler = auth_handler
@@ -202,6 +206,8 @@ class ApiClient:
             The HTTP response object.
         """
         headers = {**self.default_headers, **(extra_headers or {})}
+        merged_params = {**self.default_params, **(params or {})}
+
         url = self._build_url(endpoint)
 
         if xml_query:
@@ -211,7 +217,7 @@ class ApiClient:
             method=method,
             url=url,
             headers=headers,
-            params=params,
+            params=merged_params,
             data=data,
             timeout=self.timeout,
         )
@@ -299,16 +305,18 @@ class ApiClient:
             The HTTP response object.
         """
         headers = {**self.default_headers, **(extra_headers or {})}
+        merged_params = {**self.default_params, **(params or {})}
+
         url = self._build_url(endpoint)
         content_type = headers.get(
             "Content-Type", headers.get("content-type", "")).lower()
 
         if content_type == "application/json":
             response = requests.get(
-                url, headers=headers, params=params, json=data, timeout=self.timeout)
+                url, headers=headers, params=merged_params, json=data, timeout=self.timeout)
         else:
             response = requests.get(
-                url, headers=headers, params=params, data=data, timeout=self.timeout)
+                url, headers=headers, params=merged_params, data=data, timeout=self.timeout)
 
         if response.status_code == self.HTTP_BAD_REQUEST:
             raise BadRequestError(response)
@@ -396,16 +404,17 @@ class ApiClient:
         """
         url = self._build_url(endpoint)
         headers = {**self.default_headers, **(extra_headers or {})}
+        merged_params = {**self.default_params, **(params or {})}
 
         content_type = headers.get(
             "Content-Type", headers.get("content-type", "")).lower()
 
         if "application/json" in content_type:
             response = requests.post(
-                url, json=data, headers=headers, timeout=self.timeout, params=params)
+                url, json=data, headers=headers, timeout=self.timeout, params=merged_params)
         else:
             response = requests.post(
-                url, data=data, headers=headers, timeout=self.timeout, params=params)
+                url, data=data, headers=headers, timeout=self.timeout, params=merged_params)
 
         if response.status_code == self.HTTP_BAD_REQUEST:
             raise BadRequestError(response)

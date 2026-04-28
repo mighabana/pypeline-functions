@@ -46,7 +46,7 @@ class AuthHandler(ABC):
 class ApiKeyAuthHandler(AuthHandler):
     """Simple API Key handler that injects the key into headers."""
 
-    def __init__(self, key_name: str, api_key: str) -> None:
+    def __init__(self, key_name: str, api_key: str, inject_as: str = "header") -> None:
         """
         Initialize ApiKeyAuthHandler with a header key and API key.
 
@@ -56,9 +56,13 @@ class ApiKeyAuthHandler(AuthHandler):
             The header key to use for the API key.
         api_key : str
             The API key value to inject into the headers.
+        inject_as : str
+            A text flag to control whether or not the API key gets injected as a header or in the query parameters.
+            The default behavior is as the header for any value supplied other than "param".
         """
         self.key_name = key_name
         self.api_key = api_key
+        self.inject_as = inject_as # "header" or "param"
 
     def reauthenticate(self, client: ApiClient) -> bool:
         """
@@ -74,7 +78,10 @@ class ApiKeyAuthHandler(AuthHandler):
         bool
             Always returns True since API key injection is deterministic.
         """
-        client.default_headers[self.key_name] = self.api_key
+        if self.inject_as == "param":
+            client.default_params[self.key_name] = self.api_key
+        else:
+            client.default_headers[self.key_name] = self.api_key
         return True
 
 
