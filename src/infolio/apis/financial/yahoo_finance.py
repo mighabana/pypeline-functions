@@ -12,7 +12,49 @@ from infolio.utils.logger import get_logger
 logger = get_logger(__name__)
 
 SCHEMAS = {
-    "PRICE_SNAPSHOTS": {
+    "HISTORICAL_PRICES": {
+        "ticker": pl.Utf8,
+        "date": pl.Date,
+        "open": pl.Float64,
+        "high": pl.Float64,
+        "low": pl.Float64,
+        "close": pl.Float64,
+        "adj_close": pl.Float64,
+        "volume": pl.Int64,
+        "ingestion_datetime": pl.Datetime,
+    },
+    "DIVIDENDS": {
+        "ticker": pl.Utf8,
+        "date": pl.Date,
+        "dividend": pl.Float64,
+        "ingestion_datetime": pl.Datetime,
+    },
+    "SPLITS": {
+        "ticker": pl.Utf8,
+        "date": pl.Date,
+        "split_ratio": pl.Float64,
+        "ingestion_datetime": pl.Datetime,
+    },
+}
+
+
+class YahooFinance:
+    """
+    A utility class for Yahoo Finance data extraction.
+
+    Provides access to stock prices, company information, dividends, and splits
+    for global stock markets. Uses the yfinance library which accesses Yahoo's
+    publicly available financial data.
+
+    Notes
+    -----
+    - Data is free but intended for personal use only per Yahoo's TOS
+    - No API key required
+    - Supports bulk downloads with multithreading
+    - Historical data available back to the stock's listing date
+    """
+
+    PRICE_SCHEMA = pl.Schema({
         "ticker": pl.Utf8,
         "snapshot_timestamp": pl.Datetime,
         # Current pricing
@@ -36,52 +78,9 @@ SCHEMAS = {
         "pre_market_change": pl.Float64,
         "post_market_change": pl.Float64,
         "ingestion_datetime": pl.Datetime,
-    },
-    "COMPANY_STATIC": {
-        "ticker": pl.Utf8,
-        "effective_date": pl.Date,
-        "end_date": pl.Date,
-        "is_current": pl.Boolean,
-        # Basic info
-        "symbol": pl.Utf8,
-        "short_name": pl.Utf8,
-        "long_name": pl.Utf8,
-        "sector": pl.Utf8,
-        "industry": pl.Utf8,
-        "industry_key": pl.Utf8,
-        "sector_key": pl.Utf8,
-        # Location
-        "country": pl.Utf8,
-        "state": pl.Utf8,
-        "city": pl.Utf8,
-        "address": pl.Utf8,
-        "zip": pl.Utf8,
-        "phone": pl.Utf8,
-        "website": pl.Utf8,
-        # Business
-        "business_summary": pl.Utf8,
-        "full_time_employees": pl.Int64,
-        # Exchange info
-        "exchange": pl.Utf8,
-        "currency": pl.Utf8,
-        "quote_type": pl.Utf8,
-        "timezone": pl.Utf8,
-        # Identifiers
-        "isin": pl.Utf8,
-        "uuid": pl.Utf8,
-        "first_trade_date": pl.Date,
-        "ingestion_datetime": pl.Datetime,
-        "data_hash": pl.Utf8,
-    },
-    "COMPANY_STATIC_CHANGES": {
-        "ticker": pl.Utf8,
-        "change_date": pl.Date,
-        "field_name": pl.Utf8,
-        "old_value": pl.Utf8,
-        "new_value": pl.Utf8,
-        "ingestion_datetime": pl.Datetime,
-    },
-    "FINANCIALS_TIMESERIES": {
+    })
+
+    FINANCIALS_SCHEMA = pl.Schema({
         "ticker": pl.Utf8,
         "snapshot_timestamp": pl.Datetime,
         # Market metrics
@@ -139,8 +138,9 @@ SCHEMAS = {
         "fifty_day_average": pl.Float64,
         "two_hundred_day_average": pl.Float64,
         "ingestion_datetime": pl.Datetime,
-    },
-    "MARKET_SENTIMENT_TIMESERIES": {
+    })
+
+    SENTIMENT_SCHEMA = pl.Schema({
         "ticker": pl.Utf8,
         "snapshot_timestamp": pl.Datetime,
         # Analyst targets
@@ -167,48 +167,53 @@ SCHEMAS = {
         "beta": pl.Float64,
         "beta_3year": pl.Float64,
         "ingestion_datetime": pl.Datetime,
-    },
-    "HISTORICAL_PRICES": {
+    })
+
+    COMPANY_SCHEMA = pl.Schema({
         "ticker": pl.Utf8,
-        "date": pl.Date,
-        "open": pl.Float64,
-        "high": pl.Float64,
-        "low": pl.Float64,
-        "close": pl.Float64,
-        "adj_close": pl.Float64,
-        "volume": pl.Int64,
+        "effective_date": pl.Date,
+        "end_date": pl.Date,
+        "is_current": pl.Boolean,
+        # Basic info
+        "symbol": pl.Utf8,
+        "short_name": pl.Utf8,
+        "long_name": pl.Utf8,
+        "sector": pl.Utf8,
+        "industry": pl.Utf8,
+        "industry_key": pl.Utf8,
+        "sector_key": pl.Utf8,
+        # Location
+        "country": pl.Utf8,
+        "state": pl.Utf8,
+        "city": pl.Utf8,
+        "address": pl.Utf8,
+        "zip": pl.Utf8,
+        "phone": pl.Utf8,
+        "website": pl.Utf8,
+        # Business
+        "business_summary": pl.Utf8,
+        "full_time_employees": pl.Int64,
+        # Exchange info
+        "exchange": pl.Utf8,
+        "currency": pl.Utf8,
+        "quote_type": pl.Utf8,
+        "timezone": pl.Utf8,
+        # Identifiers
+        "isin": pl.Utf8,
+        "uuid": pl.Utf8,
+        "first_trade_date": pl.Date,
         "ingestion_datetime": pl.Datetime,
-    },
-    "DIVIDENDS": {
+        "data_hash": pl.Utf8,
+    })
+
+    COMPANY_CHANGES_SCHEMA = pl.Schema({
         "ticker": pl.Utf8,
-        "date": pl.Date,
-        "dividend": pl.Float64,
+        "change_date": pl.Date,
+        "field_name": pl.Utf8,
+        "old_value": pl.Utf8,
+        "new_value": pl.Utf8,
         "ingestion_datetime": pl.Datetime,
-    },
-    "SPLITS": {
-        "ticker": pl.Utf8,
-        "date": pl.Date,
-        "split_ratio": pl.Float64,
-        "ingestion_datetime": pl.Datetime,
-    },
-}
-
-
-class YahooFinance:
-    """
-    A utility class for Yahoo Finance data extraction.
-
-    Provides access to stock prices, company information, dividends, and splits
-    for global stock markets. Uses the yfinance library which accesses Yahoo's
-    publicly available financial data.
-
-    Notes
-    -----
-    - Data is free but intended for personal use only per Yahoo's TOS
-    - No API key required
-    - Supports bulk downloads with multithreading
-    - Historical data available back to the stock's listing date
-    """
+    })
 
     def __init__(self) -> None:
         """Initialize the Yahoo Finance client."""
@@ -330,15 +335,15 @@ class YahooFinance:
         # Convert to DataFrames and return as tuple
         prices_df = enforce_schema(
             pl.DataFrame(price_records) if price_records else pl.DataFrame(),
-            SCHEMAS["PRICE_SNAPSHOTS"]
+            self.PRICE_SCHEMA
         )
         financials_df = enforce_schema(
             pl.DataFrame(financial_records) if financial_records else pl.DataFrame(),
-            SCHEMAS["FINANCIALS_TIMESERIES"]
+            self.FINANCIALS_SCHEMA
         )
         sentiment_df = enforce_schema(
             pl.DataFrame(sentiment_records) if sentiment_records else pl.DataFrame(),
-            SCHEMAS["MARKET_SENTIMENT_TIMESERIES"]
+            self.SENTIMENT_SCHEMA
         )
 
         failed_ticker_list = sorted(
@@ -658,11 +663,11 @@ class YahooFinance:
             static_data["data_hash"] = self._compute_static_hash(static_data)
 
             df = pl.DataFrame([static_data])
-            return enforce_schema(df, SCHEMAS["COMPANY_STATIC"])
+            return enforce_schema(df, self.COMPANY_SCHEMA)
 
         except Exception as e:
             logger.error(f"❌ Failed to fetch company static for {ticker_symbol}: {e}")
-            return pl.DataFrame(schema=SCHEMAS["COMPANY_STATIC"])
+            return pl.DataFrame(schema=self.COMPANY_SCHEMA)
 
     def _fetch_batch_company_static(
         self, tickers: list[str], use_threads: bool, batch_size: int
@@ -717,7 +722,7 @@ class YahooFinance:
                     all_data.append(result)
 
         if not all_data:
-            return pl.DataFrame(schema=SCHEMAS["COMPANY_STATIC"])
+            return pl.DataFrame(schema=self.COMPANY_SCHEMA)
 
         combined = pl.concat(all_data)
         logger.info(f"✅ Retrieved company static for {combined.height} tickers")
@@ -747,7 +752,7 @@ class YahooFinance:
         """
         if previous_data.height == 0:
             logger.info("No previous data - first load")
-            return pl.DataFrame(schema=SCHEMAS["COMPANY_STATIC_CHANGES"])
+            return pl.DataFrame(schema=self.COMPANY_CHANGES_SCHEMA)
 
         changes = []
         change_date = datetime.now(tz=UTC).date()
@@ -789,10 +794,10 @@ class YahooFinance:
         if changes:
             logger.info(f"🔍 Detected {len(changes)} field changes")
             df = pl.DataFrame(changes)
-            return enforce_schema(df, SCHEMAS["COMPANY_STATIC_CHANGES"])
+            return enforce_schema(df, self.COMPANY_CHANGES_SCHEMA)
         else:
             logger.info("✅ No changes detected")
-            return pl.DataFrame(schema=SCHEMAS["COMPANY_STATIC_CHANGES"])
+            return pl.DataFrame(schema=self.COMPANY_CHANGES_SCHEMA)
 
     @staticmethod
     def _compute_static_hash(data: dict) -> str:
