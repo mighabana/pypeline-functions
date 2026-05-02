@@ -1,9 +1,9 @@
 import polars as pl
 
 
-def enforce_schema(df: pl.DataFrame, schema: dict[str, pl.DataType]) -> pl.DataFrame:
+def enforce_schema(df: pl.DataFrame, schema: pl.Schema | dict[str, pl.DataType]) -> pl.DataFrame:
     """
-    Ensure a Polars DataFrame conforms to a specified schema.
+    Coerce a Polars DataFrame to conform to a specified schema.
 
     This function:
     - Adds missing columns with null values
@@ -14,8 +14,8 @@ def enforce_schema(df: pl.DataFrame, schema: dict[str, pl.DataType]) -> pl.DataF
     ----------
     df : pl.DataFrame
         Input DataFrame to sanitize.
-    schema : Dict[str, pl.DataType]
-        Dictionary mapping column names to desired Polars data types.
+    schema : pl.Schema | Dict[str, pl.DataType]
+        Mapping of column names to desired Polars data types. Accepts either a native ``pl.Schema or a plain dict.
 
     Returns
     -------
