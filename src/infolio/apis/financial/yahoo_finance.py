@@ -32,7 +32,7 @@ class YahooFinance:
 
     PRICE_SCHEMA = pl.Schema({
         "ticker": pl.Utf8,
-        "snapshot_timestamp": pl.Datetime("us", "UTC"),
+        "snapshot_timestamp": pl.Datetime("us"),
         "current_price": pl.Float64,
         "previous_close": pl.Float64,
         "open": pl.Float64,
@@ -49,12 +49,12 @@ class YahooFinance:
         "post_market_price": pl.Float64,
         "pre_market_change": pl.Float64,
         "post_market_change": pl.Float64,
-        "ingestion_datetime": pl.Datetime("us", "UTC"),
+        "ingestion_datetime": pl.Datetime("us"),
     })
 
     FINANCIALS_SCHEMA = pl.Schema({
         "ticker": pl.Utf8,
-        "snapshot_timestamp": pl.Datetime("us", "UTC"),
+        "snapshot_timestamp": pl.Datetime("us"),
         "market_cap": pl.Float64,
         "trailing_pe": pl.Float64,
         "forward_pe": pl.Float64,
@@ -100,12 +100,12 @@ class YahooFinance:
         "fifty_two_week_change": pl.Float64,
         "fifty_day_average": pl.Float64,
         "two_hundred_day_average": pl.Float64,
-        "ingestion_datetime": pl.Datetime("us", "UTC"),
+        "ingestion_datetime": pl.Datetime("us"),
     })
 
     SENTIMENT_SCHEMA = pl.Schema({
         "ticker": pl.Utf8,
-        "snapshot_timestamp": pl.Datetime("us", "UTC"),
+        "snapshot_timestamp": pl.Datetime("us"),
         "target_high_price": pl.Float64,
         "target_low_price": pl.Float64,
         "target_mean_price": pl.Float64,
@@ -123,7 +123,7 @@ class YahooFinance:
         "float_shares": pl.Int64,
         "beta": pl.Float64,
         "beta_3year": pl.Float64,
-        "ingestion_datetime": pl.Datetime("us", "UTC"),
+        "ingestion_datetime": pl.Datetime("us"),
     })
 
     COMPANY_SCHEMA = pl.Schema({
@@ -154,7 +154,7 @@ class YahooFinance:
         "isin": pl.Utf8,
         "uuid": pl.Utf8,
         "first_trade_date": pl.Date,
-        "ingestion_datetime": pl.Datetime("us", "UTC"),
+        "ingestion_datetime": pl.Datetime("us"),
         "data_hash": pl.Utf8,
     })
 
@@ -164,7 +164,7 @@ class YahooFinance:
         "field_name": pl.Utf8,
         "old_value": pl.Utf8,
         "new_value": pl.Utf8,
-        "ingestion_datetime": pl.Datetime("us", "UTC"),
+        "ingestion_datetime": pl.Datetime("us"),
     })
 
     HISTORICAL_PRICES_SCHEMA = pl.Schema({
@@ -176,21 +176,21 @@ class YahooFinance:
         "close": pl.Float64,
         "adj_close": pl.Float64,
         "volume": pl.Int64,
-        "ingestion_datetime": pl.Datetime("us", "UTC"),
+        "ingestion_datetime": pl.Datetime("us"),
     })
 
     DIVIDENDS_SCHEMA = pl.Schema({
         "ticker": pl.Utf8,
         "date": pl.Date,
         "dividend": pl.Float64,
-        "ingestion_datetime": pl.Datetime("us", "UTC"),
+        "ingestion_datetime": pl.Datetime("us"),
     })
 
     SPLITS_SCHEMA = pl.Schema({
         "ticker": pl.Utf8,
         "date": pl.Date,
         "split_ratio": pl.Float64,
-        "ingestion_datetime": pl.Datetime("us", "UTC"),
+        "ingestion_datetime": pl.Datetime("us"),
     })
 
     INCOME_STMT_SCHEMA = pl.Schema({
@@ -212,7 +212,7 @@ class YahooFinance:
         "diluted_eps": pl.Float64,
         "basic_shares_outstanding": pl.Float64,
         "diluted_shares_outstanding": pl.Float64,
-        "ingestion_datetime": pl.Datetime("us", "UTC"),
+        "ingestion_datetime": pl.Datetime("us"),
     })
 
     BALANCE_SHEET_SCHEMA = pl.Schema({
@@ -239,7 +239,7 @@ class YahooFinance:
         "working_capital": pl.Float64,
         "total_debt": pl.Float64,
         "net_debt": pl.Float64,
-        "ingestion_datetime": pl.Datetime("us", "UTC"),
+        "ingestion_datetime": pl.Datetime("us"),
     })
 
     CASH_FLOW_SCHEMA = pl.Schema({
@@ -256,7 +256,7 @@ class YahooFinance:
         "financing_cash_flow": pl.Float64,
         "free_cash_flow": pl.Float64,
         "end_cash_position": pl.Float64,
-        "ingestion_datetime": pl.Datetime("us", "UTC"),
+        "ingestion_datetime": pl.Datetime("us"),
     })
 
     EARNINGS_HISTORY_SCHEMA = pl.Schema({
@@ -266,7 +266,7 @@ class YahooFinance:
         "eps_actual": pl.Float64,
         "eps_difference": pl.Float64,
         "surprise_percent": pl.Float64,
-        "ingestion_datetime": pl.Datetime("us", "UTC"),
+        "ingestion_datetime": pl.Datetime("us"),
     })
 
     ANALYST_RATINGS_SCHEMA = pl.Schema({
@@ -276,7 +276,7 @@ class YahooFinance:
         "from_grade": pl.Utf8,
         "to_grade": pl.Utf8,
         "action": pl.Utf8,
-        "ingestion_datetime": pl.Datetime("us", "UTC"),
+        "ingestion_datetime": pl.Datetime("us"),
     })
 
     # ── Inner class: shared lazy batch source for latest-info streams ──────────
@@ -545,7 +545,7 @@ class YahooFinance:
             return
 
         changes = []
-        change_date = datetime.now(tz=UTC).date()
+        change_date = datetime.now(UTC).replace(tzinfo=None).date()
 
         fields_to_monitor = [
             "symbol", "short_name", "long_name", "sector", "industry",
@@ -573,7 +573,7 @@ class YahooFinance:
                             "field_name": field,
                             "old_value": str(previous_val) if previous_val is not None else None,
                             "new_value": str(current_val) if current_val is not None else None,
-                            "ingestion_datetime": datetime.now(tz=UTC),
+                            "ingestion_datetime": datetime.now(UTC).replace(tzinfo=None),
                         })
                 except Exception as e:
                     logger.warning(f"Error comparing {field} for {ticker}: {e}")
@@ -688,7 +688,7 @@ class YahooFinance:
                             "ticker": ticker_symbol,
                             "date": div_date.date(),
                             "dividend": float(dividend),
-                            "ingestion_datetime": datetime.now(tz=UTC),
+                            "ingestion_datetime": datetime.now(UTC).replace(tzinfo=None),
                         })
                 except Exception as e:
                     logger.error(f"❌ Failed to fetch dividends for {ticker_symbol}: {e}")
@@ -741,7 +741,7 @@ class YahooFinance:
                             "ticker": ticker_symbol,
                             "date": split_date.date(),
                             "split_ratio": float(split_ratio),
-                            "ingestion_datetime": datetime.now(tz=UTC),
+                            "ingestion_datetime": datetime.now(UTC).replace(tzinfo=None),
                         })
                 except Exception as e:
                     logger.error(f"❌ Failed to fetch splits for {ticker_symbol}: {e}")
@@ -792,7 +792,7 @@ class YahooFinance:
         for ticker_symbol in tickers:
             try:
                 ticker = yf.Ticker(ticker_symbol)
-                ingestion_time = datetime.now(tz=UTC)
+                ingestion_time = datetime.now(UTC).replace(tzinfo=None)
 
                 income_df = self._parse_income_stmt(ticker, ticker_symbol, freq, ingestion_time)
                 balance_df = self._parse_balance_sheet(ticker, ticker_symbol, freq, ingestion_time)
@@ -852,7 +852,7 @@ class YahooFinance:
                         logger.debug(f"ℹ️ No earnings history for {ticker_symbol}")
                         continue
 
-                    ingestion_time = datetime.now(tz=UTC)
+                    ingestion_time = datetime.now(UTC).replace(tzinfo=None)
                     for idx, row in history.iterrows():
                         report_date = idx.date() if hasattr(idx, "date") else None
                         records.append({
@@ -917,7 +917,7 @@ class YahooFinance:
                         logger.debug(f"ℹ️ No analyst ratings for {ticker_symbol}")
                         continue
 
-                    ingestion_time = datetime.now(tz=UTC)
+                    ingestion_time = datetime.now(UTC).replace(tzinfo=None)
                     for idx, row in upgrades.iterrows():
                         rating_date = idx.date() if hasattr(idx, "date") else None
                         records.append({
@@ -1118,11 +1118,11 @@ class YahooFinance:
 
             timestamp = info.get("regularMarketTime")
             snapshot_timestamp = (
-                datetime.fromtimestamp(timestamp, tz=UTC)
+                datetime.fromtimestamp(timestamp, tz=UTC).replace(tzinfo=None)
                 if timestamp
-                else datetime.now(tz=UTC)
+                else datetime.now(UTC).replace(tzinfo=None)
             )
-            ingestion_time = datetime.now(tz=UTC)
+            ingestion_time = datetime.now(UTC).replace(tzinfo=None)
 
             price_record = {
                 "ticker": ticker_symbol,
@@ -1269,7 +1269,7 @@ class YahooFinance:
         try:
             ticker = yf.Ticker(ticker_symbol)
             info = ticker.info
-            effective_date = datetime.now(tz=UTC).date()
+            effective_date = datetime.now(UTC).replace(tzinfo=None).date()
 
             static_data = {
                 "ticker": ticker_symbol,
@@ -1299,7 +1299,7 @@ class YahooFinance:
                 "isin": info.get("isin"),
                 "uuid": info.get("uuid"),
                 "first_trade_date": datetime.fromtimestamp(v, tz=UTC).date() if (v := info.get("firstTradeDateEpochUtc")) else None,
-                "ingestion_datetime": datetime.now(tz=UTC),
+                "ingestion_datetime": datetime.now(UTC).replace(tzinfo=None),
             }
             static_data["data_hash"] = self._compute_static_hash(static_data)
 
@@ -1371,7 +1371,7 @@ class YahooFinance:
             df = pd.concat(records, ignore_index=True)
 
         pl_df = pl.from_pandas(df)
-        pl_df = pl_df.with_columns(pl.lit(datetime.now(tz=UTC)).alias("ingestion_datetime"))
+        pl_df = pl_df.with_columns(pl.lit(datetime.now(UTC).replace(tzinfo=None)).alias("ingestion_datetime"))
         pl_df = pl_df.select([
             "ticker", "date", "open", "high", "low", "close",
             "adj_close", "volume", "ingestion_datetime",
