@@ -11,33 +11,6 @@ from infolio.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
-SCHEMAS = {
-    "HISTORICAL_PRICES": {
-        "ticker": pl.Utf8,
-        "date": pl.Date,
-        "open": pl.Float64,
-        "high": pl.Float64,
-        "low": pl.Float64,
-        "close": pl.Float64,
-        "adj_close": pl.Float64,
-        "volume": pl.Int64,
-        "ingestion_datetime": pl.Datetime,
-    },
-    "DIVIDENDS": {
-        "ticker": pl.Utf8,
-        "date": pl.Date,
-        "dividend": pl.Float64,
-        "ingestion_datetime": pl.Datetime,
-    },
-    "SPLITS": {
-        "ticker": pl.Utf8,
-        "date": pl.Date,
-        "split_ratio": pl.Float64,
-        "ingestion_datetime": pl.Datetime,
-    },
-}
-
-
 class YahooFinance:
     """
     A utility class for Yahoo Finance data extraction.
@@ -212,6 +185,32 @@ class YahooFinance:
         "field_name": pl.Utf8,
         "old_value": pl.Utf8,
         "new_value": pl.Utf8,
+        "ingestion_datetime": pl.Datetime,
+    })
+
+    HISTORICAL_PRICES_SCHEMA = pl.Schema({
+        "ticker": pl.Utf8,
+        "date": pl.Date,
+        "open": pl.Float64,
+        "high": pl.Float64,
+        "low": pl.Float64,
+        "close": pl.Float64,
+        "adj_close": pl.Float64,
+        "volume": pl.Int64,
+        "ingestion_datetime": pl.Datetime,
+    })
+
+    DIVIDENDS_SCHEMA = pl.Schema({
+        "ticker": pl.Utf8,
+        "date": pl.Date,
+        "dividend": pl.Float64,
+        "ingestion_datetime": pl.Datetime,
+    })
+
+    SPLITS_SCHEMA = pl.Schema({
+        "ticker": pl.Utf8,
+        "date": pl.Date,
+        "split_ratio": pl.Float64,
         "ingestion_datetime": pl.Datetime,
     })
 
@@ -880,7 +879,7 @@ class YahooFinance:
             ticker = tickers[0]
             if data.empty:
                 logger.warning(f"⚠️ No data for {ticker}")
-                return pl.DataFrame(schema=SCHEMAS["HISTORICAL_PRICES"])
+                return pl.DataFrame(schema=self.HISTORICAL_PRICES_SCHEMA)
 
             df = data.reset_index()
             df["ticker"] = ticker
@@ -896,7 +895,7 @@ class YahooFinance:
         else:
             if data.empty:
                 logger.warning("⚠️ No data for any tickers")
-                return pl.DataFrame(schema=SCHEMAS["HISTORICAL_PRICES"])
+                return pl.DataFrame(schema=self.HISTORICAL_PRICES_SCHEMA)
 
             records = []
             for ticker in tickers:
@@ -922,7 +921,7 @@ class YahooFinance:
                     continue
 
             if not records:
-                return pl.DataFrame(schema=SCHEMAS["HISTORICAL_PRICES"])
+                return pl.DataFrame(schema=self.HISTORICAL_PRICES_SCHEMA)
 
             import pandas as pd
             df = pd.concat(records, ignore_index=True)
@@ -938,7 +937,7 @@ class YahooFinance:
         ])
 
         logger.info(f"✅ Retrieved {pl_df.height:,} historical records")
-        return enforce_schema(pl_df, SCHEMAS["HISTORICAL_PRICES"])
+        return enforce_schema(pl_df, self.HISTORICAL_PRICES_SCHEMA)
 
     def get_dividends(self, tickers: list[str]) -> pl.DataFrame:
         """
@@ -985,7 +984,7 @@ class YahooFinance:
         df = pl.DataFrame(records)
         logger.info(f"✅ Retrieved {len(records)} dividend records")
 
-        return enforce_schema(df, SCHEMAS["DIVIDENDS"])
+        return enforce_schema(df, self.DIVIDENDS_SCHEMA)
 
     def get_splits(self, tickers: list[str]) -> pl.DataFrame:
         """
@@ -1032,7 +1031,7 @@ class YahooFinance:
         df = pl.DataFrame(records)
         logger.info(f"✅ Retrieved {len(records)} split records")
 
-        return enforce_schema(df, SCHEMAS["SPLITS"])
+        return enforce_schema(df, self.SPLITS_SCHEMA)
 
     def get_timeseries_prices(
         self,
